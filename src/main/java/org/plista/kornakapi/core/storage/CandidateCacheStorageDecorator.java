@@ -74,6 +74,11 @@ public class CandidateCacheStorageDecorator implements Storage {
   }
 
   @Override
+  public void purgePreferences(int olderThanInHours) throws IOException {
+    delegate.purgePreferences(olderThanInHours);
+  }
+
+  @Override
   public void addCandidate(String label, long itemID) throws IOException {
     delegate.addCandidate(label, itemID);
     invalidateCache(label);

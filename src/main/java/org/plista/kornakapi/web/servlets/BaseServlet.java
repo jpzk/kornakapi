@@ -17,7 +17,7 @@ package org.plista.kornakapi.web.servlets;
 
 import org.plista.kornakapi.KornakapiRecommender;
 import org.plista.kornakapi.core.storage.Storage;
-import org.plista.kornakapi.core.training.TrainingScheduler;
+import org.plista.kornakapi.core.training.TaskScheduler;
 import org.plista.kornakapi.core.training.preferencechanges.PreferenceChangeListener;
 import org.plista.kornakapi.web.Components;
 import org.plista.kornakapi.web.InvalidParameterException;
@@ -40,7 +40,7 @@ public abstract class BaseServlet extends HttpServlet {
     return getComponents().recommender(name);
   }
 
-  protected TrainingScheduler scheduler() {
+  protected TaskScheduler scheduler() {
     return getComponents().scheduler();
   }
 

@@ -40,6 +40,8 @@ public class ConfigurationTest {
         "    <jdbcUrl>jdbc:mysql://localhost/plista</jdbcUrl>\n" +
         "    <username>root</username>\n" +
         "    <password>secret</password>\n" +
+        "    <purgePreferencesCronExpression>0 3,15 * * *</purgePreferencesCronExpression>\n" +
+        "    <purgePreferencesOlderThanHours>12</purgePreferencesOlderThanHours>\n" +
         "  </storageConfiguration>\n" +
 
         "  <itembasedRecommenders>\n" +
@@ -77,6 +79,8 @@ public class ConfigurationTest {
     assertEquals("jdbc:mysql://localhost/plista", storageConf.getJdbcUrl());
     assertEquals("root", storageConf.getUsername());
     assertEquals("secret", storageConf.getPassword());
+    assertEquals("0 3,15 * * *", storageConf.getPurgePreferencesCronExpression());
+    assertEquals(12, storageConf.getPurgePreferencesOlderThanHours());
 
     List<ItembasedRecommenderConfig> itembasedRecommenders = conf.getItembasedRecommenders();
     assertNotNull(itembasedRecommenders);

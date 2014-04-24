@@ -60,6 +60,9 @@ public class MySqlStorage implements Storage {
   private static final String GET_CANDIDATES_QUERY =
       "SELECT item_id FROM taste_candidates WHERE label = ?";
 
+  private static final String PURGE_PREFERENCES_QUERY =
+      "DELETE FROM taste_preferences WHERE TIMESTAMPDIFF(HOUR, observed, CURRENT_TIMESTAMP()) > ?;";
+
   private static final Logger log = LoggerFactory.getLogger(MySqlStorage.class);
 
   public MySqlStorage(StorageConfiguration storageConf) {
@@ -135,6 +138,27 @@ public class MySqlStorage implements Storage {
         stmt.executeBatch();
         log.info("imported {} records in batch. done.", recordsQueued);
       }
+
+    } catch (SQLException e) {
+      throw new IOException(e);
+    } finally {
+      IOUtils.quietClose(stmt);
+      IOUtils.quietClose(conn);
+    }
+  }
+
+  @Override
+  public void purgePreferences(int olderThanInHours) throws IOException {
+    Connection conn = null;
+    PreparedStatement stmt = null;
+
+    try {
+      conn = dataSource.getConnection();
+      stmt = conn.prepareStatement(PURGE_PREFERENCES_QUERY);
+
+      stmt.setInt(1, olderThanInHours);
+
+      stmt.execute();
 
     } catch (SQLException e) {
       throw new IOException(e);

@@ -44,8 +44,8 @@ import org.plista.kornakapi.core.storage.MySqlStorage;
 import org.plista.kornakapi.core.storage.Storage;
 import org.plista.kornakapi.core.training.FactorizationbasedInMemoryTrainer;
 import org.plista.kornakapi.core.training.MultithreadedItembasedInMemoryTrainer;
+import org.plista.kornakapi.core.training.TaskScheduler;
 import org.plista.kornakapi.core.training.Trainer;
-import org.plista.kornakapi.core.training.TrainingScheduler;
 import org.plista.kornakapi.core.training.preferencechanges.DelegatingPreferenceChangeListener;
 import org.plista.kornakapi.core.training.preferencechanges.InMemoryPreferenceChangeListener;
 import org.plista.kornakapi.web.Components;
@@ -82,18 +82,26 @@ public class BigBangServletContextListener implements ServletContextListener {
       Preconditions.checkState(conf.getNumProcessorsForTraining() > 0, "need at least one processor for training!");
       
       Storage storage;
-      if(conf.getMaxPersistence()){
-    	  storage = new CandidateCacheStorageDecorator(new MySqlMaxPersistentStorage(conf.getStorageConfiguration()));
-      }else{
-    	  storage = new CandidateCacheStorageDecorator(new MySqlStorage(conf.getStorageConfiguration()));
+      if (conf.getMaxPersistence()) {
+        storage = new CandidateCacheStorageDecorator(new MySqlMaxPersistentStorage(conf.getStorageConfiguration()));
+      } else {
+        storage = new CandidateCacheStorageDecorator(new MySqlStorage(conf.getStorageConfiguration()));
       }
 
-	DataModel persistentData = storage.recommenderData();
+      TaskScheduler scheduler = new TaskScheduler();
+
+      String purgePreferencesCronExpression = conf.getStorageConfiguration().getPurgePreferencesCronExpression();
+      int olderThanHours = conf.getStorageConfiguration().getPurgePreferencesOlderThanHours();
+
+      scheduler.setPurgeOldPreferences(olderThanHours, purgePreferencesCronExpression);
+
+      DataModel persistentData = storage.recommenderData();
+
 
       Map<String, KornakapiRecommender> recommenders = Maps.newHashMap();
       Map<String, Trainer> trainers = Maps.newHashMap();
 
-      TrainingScheduler scheduler = new TrainingScheduler();
+
       DelegatingPreferenceChangeListener preferenceChangeListener = new DelegatingPreferenceChangeListener();
 
       for (ItembasedRecommenderConfig itembasedConf : conf.getItembasedRecommenders()) {

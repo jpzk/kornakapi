@@ -16,12 +16,11 @@
 package org.plista.kornakapi.web;
 
 import com.google.common.base.Preconditions;
-import org.apache.mahout.cf.taste.recommender.Recommender;
 import org.plista.kornakapi.KornakapiRecommender;
 import org.plista.kornakapi.core.config.Configuration;
 import org.plista.kornakapi.core.storage.Storage;
+import org.plista.kornakapi.core.training.TaskScheduler;
 import org.plista.kornakapi.core.training.Trainer;
-import org.plista.kornakapi.core.training.TrainingScheduler;
 import org.plista.kornakapi.core.training.preferencechanges.PreferenceChangeListener;
 
 import java.util.Map;
@@ -33,13 +32,13 @@ public class Components {
   private final Storage storage;
   private final Map<String, KornakapiRecommender> recommenders;
   private final Map<String, Trainer> trainers;
-  private final TrainingScheduler scheduler;
+  private final TaskScheduler scheduler;
   private final PreferenceChangeListener preferenceChangeListener;
 
   private static Components INSTANCE;
 
   private Components(Configuration conf, Storage storage, Map<String, KornakapiRecommender> recommenders,
-        Map<String, Trainer> trainers, TrainingScheduler scheduler, PreferenceChangeListener preferenceChangeListener) {
+        Map<String, Trainer> trainers, TaskScheduler scheduler, PreferenceChangeListener preferenceChangeListener) {
     this.conf = conf;
     this.storage = storage;
     this.recommenders = recommenders;
@@ -49,7 +48,7 @@ public class Components {
   }
 
   public static synchronized void init(Configuration conf, Storage storage,
-      Map<String, KornakapiRecommender> recommenders, Map<String, Trainer> trainers, TrainingScheduler scheduler,
+      Map<String, KornakapiRecommender> recommenders, Map<String, Trainer> trainers, TaskScheduler scheduler,
       PreferenceChangeListener preferenceChangeListener) {
     Preconditions.checkState(INSTANCE == null);
     INSTANCE = new Components(conf, storage, recommenders, trainers, scheduler, preferenceChangeListener);
@@ -76,7 +75,7 @@ public class Components {
     return storage;
   }
 
-  public TrainingScheduler scheduler() {
+  public TaskScheduler scheduler() {
     return scheduler;
   }
 

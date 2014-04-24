@@ -35,6 +35,8 @@ public interface Storage extends Closeable {
 
   void batchSetPreferences(Iterator<Preference> preferences, int batchSize) throws IOException;
 
+  void purgePreferences(int olderThanInHours) throws IOException;
+
   void addCandidate(String label, long itemID) throws IOException;
 
   Iterable<String> batchAddCandidates(Iterator<Candidate> candidates, int batchSize) throws IOException;

@@ -22,6 +22,8 @@ public class StorageConfiguration {
   private String jdbcUrl;
   private String username;
   private String password;
+  private String purgePreferencesCronExpression;
+  private int purgePreferencesOlderThanHours;
 
   public String getJdbcDriverClass() {
     return jdbcDriverClass;
@@ -53,5 +55,21 @@ public class StorageConfiguration {
 
   public void setPassword(String password) {
     this.password = password;
+  }
+
+  public String getPurgePreferencesCronExpression() {
+    return purgePreferencesCronExpression;
+  }
+
+  public void setPurgePreferencesCronExpression(String purgePreferencesCronExpression) {
+    this.purgePreferencesCronExpression = purgePreferencesCronExpression;
+  }
+
+  public int getPurgePreferencesOlderThanHours() {
+    return purgePreferencesOlderThanHours;
+  }
+
+  public void setPurgePreferencesOlderThanHours(int purgePreferencesOlderThanHours) {
+    this.purgePreferencesOlderThanHours = purgePreferencesOlderThanHours;
   }
 }

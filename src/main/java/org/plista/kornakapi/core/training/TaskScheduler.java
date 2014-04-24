@@ -31,12 +31,12 @@ import org.quartz.spi.ThreadPool;
 import java.io.Closeable;
 import java.io.IOException;
 
-/** a class to schedule the training of recommenders */
-public class TrainingScheduler implements Closeable {
+/** a class to schedule the training of recommenders & purging of preferences */
+public class TaskScheduler implements Closeable {
 
   private final Scheduler scheduler;
 
-  public TrainingScheduler() throws Exception {
+  public TaskScheduler() throws Exception {
     ThreadPool threadPool = new SimpleThreadPool(1, Thread.NORM_PRIORITY);
     threadPool.initialize();
 
@@ -56,6 +56,24 @@ public class TrainingScheduler implements Closeable {
 
   private JobKey key(String recommenderName) {
     return new JobKey("train-" + recommenderName);
+  }
+
+  public void setPurgeOldPreferences(int olderThanHours, String cronExpression) {
+    JobDetail job = JobBuilder.newJob(PurgeOldPreferencesJob.class)
+        .withIdentity("purgeOldPreferences")
+        .build();
+    job.getJobDataMap().put(PurgeOldPreferencesJob.PURGE_OLDERTHANHOURS_PARAM, olderThanHours);
+
+    try {
+      // http://www.quartz-scheduler.org/documentation/quartz-2.1.x/tutorials/crontrigger
+      CronTrigger trigger = TriggerBuilder.newTrigger()
+          .withSchedule(CronScheduleBuilder.cronSchedule(cronExpression))
+          .build();
+
+      scheduler.scheduleJob(job, trigger);
+    } catch (SchedulerException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public void addRecommenderTrainingJob(String recommenderName) {
