@@ -50,7 +50,7 @@ public class FactorizationbasedInMemoryTrainer extends AbstractTrainer {
       long estimateDuration = System.currentTimeMillis() - start;
       
       if (log.isInfoEnabled()) {
-    	  log.info("Model trained in {} ms", estimateDuration);
+        log.info("Model trained in {} ms", estimateDuration);
       }
 
       new FilePersistenceStrategy(targetFile).maybePersist(factorization);

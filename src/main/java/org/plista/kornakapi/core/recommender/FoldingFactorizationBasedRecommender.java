@@ -48,11 +48,17 @@ public final class FoldingFactorizationBasedRecommender extends AbstractRecommen
   private FoldingFactorization foldingFactorization;
   private final PersistenceStrategy persistenceStrategy;
   private final RefreshHelper refreshHelper;
+  private final int numEstimationThreads;
 
   private static final Logger log = LoggerFactory.getLogger(FoldingFactorizationBasedRecommender.class);
 
+  /*public FoldingFactorizationBasedRecommender(DataModel dataModel, CandidateItemsStrategy candidateItemsStrategy,
+                                              PersistenceStrategy persistenceStrategy) throws TasteException {
+    this(dataModel, candidateItemsStrategy, persistenceStrategy, false);
+  }*/
+
   public FoldingFactorizationBasedRecommender(DataModel dataModel, CandidateItemsStrategy candidateItemsStrategy,
-      PersistenceStrategy persistenceStrategy) throws TasteException {
+      PersistenceStrategy persistenceStrategy, int numEstimationThreads) throws TasteException {
     super(dataModel, candidateItemsStrategy);
 
     this.persistenceStrategy = Preconditions.checkNotNull(persistenceStrategy);
@@ -63,6 +69,7 @@ public final class FoldingFactorizationBasedRecommender extends AbstractRecommen
     } catch (IOException e) {
       throw new TasteException("Error loading factorization", e);
     }
+    this.numEstimationThreads = numEstimationThreads;
 
     refreshHelper = new RefreshHelper(new Callable<Object>() {
       @Override
@@ -98,18 +105,24 @@ public final class FoldingFactorizationBasedRecommender extends AbstractRecommen
     long fetchItemIDsDuration = System.currentTimeMillis() - fetchItemIDsStart;
 
     long estimateStart = System.currentTimeMillis();
-    List<RecommendedItem> topItems = TopItems.getTopItems(howMany, possibleItemIDs.iterator(), rescorer,
-        new Estimator(userID));
+    List<RecommendedItem> topItems;
+    if (numEstimationThreads > 1) {
+      topItems = ParallelTopItems.getTopItems(howMany, numEstimationThreads, possibleItemIDs, rescorer,
+                                              new Estimator(userID));
+    } else {
+      topItems = TopItems.getTopItems(howMany, possibleItemIDs.iterator(), rescorer, new Estimator(userID));
+    }
     long estimateDuration = System.currentTimeMillis() - estimateStart;
     
     long numCandidates = -1;
-    if (rescorer != null) {
-    	numCandidates = ((FixedCandidatesIDRescorer) rescorer).numCandidates();
+    if (rescorer != null && rescorer instanceof FixedCandidatesIDRescorer) {
+      numCandidates = ((FixedCandidatesIDRescorer) rescorer).numCandidates();
     }
     
     if (log.isInfoEnabled()) {
-    	log.info("fetched {} interactions of user {} in {} ms ({} itemIDs in {} ms, estimation of {} in {} ms)", 
-    			new Object[] { preferencesFromUser.length(), userID, fetchHistoryDuration, possibleItemIDs.size(), fetchItemIDsDuration, numCandidates, estimateDuration });
+      log.info("Fetched {} interactions of user {} in {} ms ({} itemIDs in {} ms, estimation of {} in {} ms)",
+          new Object[] { preferencesFromUser.length(), userID, fetchHistoryDuration, possibleItemIDs.size(),
+                         fetchItemIDsDuration, numCandidates, estimateDuration });
     }
     
     log.debug("Recommendations are: {}", topItems);
@@ -119,7 +132,7 @@ public final class FoldingFactorizationBasedRecommender extends AbstractRecommen
 
   @Override
   public float estimatePreference(long userID, long itemID) throws TasteException {
-	double[] userFeatures = foldingFactorization.factorization().getUserFeatures(userID);
+  double[] userFeatures = foldingFactorization.factorization().getUserFeatures(userID);
     double[] itemFeatures = foldingFactorization.factorization().getItemFeatures(itemID);
 
     return (float) dotProduct(userFeatures, itemFeatures);
@@ -177,6 +190,9 @@ public final class FoldingFactorizationBasedRecommender extends AbstractRecommen
       return estimatePreference(theUserID, itemID);
     }
   }
+
+
+
 
   private final class AnonymousEstimator implements TopItems.Estimator<Long> {
 

@@ -151,7 +151,7 @@ public class BigBangServletContextListener implements ServletContextListener {
             new CachingAllUnknownItemsCandidateItemsStrategy(persistentData);
 
         FoldingFactorizationBasedRecommender svdRecommender = new FoldingFactorizationBasedRecommender(persistentData,
-            allUnknownItemsStrategy, persistence);
+            allUnknownItemsStrategy, persistence, factorizationbasedConf.getNumberOfThreadsForEstimation());
 
         recommenders.put(name, svdRecommender);
         trainers.put(name, new FactorizationbasedInMemoryTrainer(factorizationbasedConf));

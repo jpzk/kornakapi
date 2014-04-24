@@ -57,6 +57,7 @@ public class ConfigurationTest {
         "      <usesImplicitFeedback>true</usesImplicitFeedback>\n" +
         "      <numberOfFeatures>10</numberOfFeatures>\n" +
         "      <numberOfIterations>10</numberOfIterations>\n" +
+        "      <numberOfThreadsForEstimation>4</numberOfThreadsForEstimation>\n" +
         "      <lambda>0.01</lambda>\n" +
         "      <alpha>40.0</alpha>\n" +
         "      <retrainAfterPreferenceChanges>5</retrainAfterPreferenceChanges>\n" +
@@ -98,6 +99,7 @@ public class ConfigurationTest {
     assertTrue(factorizationbasedRecommenderConf.isUsesImplicitFeedback());
     assertEquals(10, factorizationbasedRecommenderConf.getNumberOfFeatures());
     assertEquals(10, factorizationbasedRecommenderConf.getNumberOfIterations());
+    assertEquals(4, factorizationbasedRecommenderConf.getNumberOfThreadsForEstimation());
     assertEquals(0.01, factorizationbasedRecommenderConf.getLambda(), 0);
     assertEquals(40, factorizationbasedRecommenderConf.getAlpha(), 0);
     assertEquals(5, factorizationbasedRecommenderConf.getRetrainAfterPreferenceChanges());
