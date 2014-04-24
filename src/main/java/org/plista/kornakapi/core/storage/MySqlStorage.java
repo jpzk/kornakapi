@@ -31,30 +31,37 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Iterator;
 import java.util.Set;
 
 /** an implementation of {@link Storage} for MySQL
  *
- * CREATE TABLE taste_preferences (
- * user_id bigint(20) NOT NULL,
- * item_id bigint(20) NOT NULL,
- * preference float NOT NULL,
- * PRIMARY KEY (user_id,item_id),
- * KEY item_id (item_id)
- * );
  *
- * CREATE TABLE taste_candidates (
- * label varchar(255) NOT NULL,
- * item_id bigint(20) NOT NULL,
- * PRIMARY KEY (label,item_id)
- * );
- * 
- * ALTER TABLE taste_preferences ADD observed timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+
+ CREATE TABLE taste_preferences(
+    user_id bigint(20) not null,
+    item_id bigint(20) not null,
+    preference float not null,
+    timeframe bit(4) NOT NULL DEFAULT 0,
+    primary key( user_id, item_id, timeframe),
+    key item_id(item_id)
+ )
+ partition by range(timeframe) (
+    PARTITION p0 VALUES LESS THAN (1),
+    PARTITION p1 VALUES LESS THAN (2),
+    PARTITION p2 VALUES LESS THAN (3),
+    PARTITION p3 VALUES LESS THAN (4),
+    PARTITION p4 VALUES LESS THAN (5),
+    PARTITION p5 VALUES LESS THAN (6)
+ );
+
+ CREATE TABLE taste_candidates (
+   label varchar(255) NOT NULL,
+   item_id bigint(20) NOT NULL,
+   PRIMARY KEY (label,item_id)
+ );
+
  **/
 public class MySqlStorage implements Storage {
 
@@ -77,8 +84,11 @@ public class MySqlStorage implements Storage {
   private static final String GET_CANDIDATES_QUERY =
       "SELECT item_id FROM taste_candidates WHERE label = ?";
 
-  private static final String PURGE_PREFERENCES_QUERY =
-      "DELETE FROM taste_preferences WHERE TIMESTAMPDIFF(HOUR, observed, CURRENT_TIMESTAMP()) > ?;";
+  private static final String SWITCH_CURRENT_PARTITION_QUERY =
+      "ALTER TABLE taste_preferences MODIFY timeframe INT DEFAULT ?;";
+
+  private static final String TRUNCATE_PREVIOUS_PARTITION_QUERY_FRAGMENT =
+      "ALTER TABLE taste_preferences TRUNCATE PARTITION ";
 
   private static final Logger log = LoggerFactory.getLogger(MySqlStorage.class);
 
@@ -164,23 +174,50 @@ public class MySqlStorage implements Storage {
     }
   }
 
+  /**
+   port from PHP code:
+
+   $hours=  (int)(time()/3600)  ;
+   $selDay=  $hours%  72;
+   $selHalfDay=  (int)($selDay/  12);
+   $sql=  'alter table taste_preferences modify timeframe int default'. $selHalfDay;
+   $stmt=  new  PDO('mysql:host=localhost;dbname=kornakapi;charset=utf8','dbname','dbpwd');
+   $stmt->exec($sql);
+   $olttable=  ($selHalfDay+1)  %  6;
+   $sql=  'ALTER TABLE taste_preferences TRUNCATE PARTITION p'.$olttable;
+   $stmt=  new  PDO('mysql:host=localhost;dbname=kornakapi;charset=utf8','dbname','dbpwd');
+   $stmt->exec($sql);
+
+   * @throws IOException
+   */
   @Override
-  public void purgePreferences(int olderThanInHours) throws IOException {
+  public void purgeOldPreferences() throws IOException {
     Connection conn = null;
-    PreparedStatement stmt = null;
+    PreparedStatement switchStmt = null;
+    Statement truncateStmt = null;
 
     try {
       conn = dataSource.getConnection();
-      stmt = conn.prepareStatement(PURGE_PREFERENCES_QUERY);
 
-      stmt.setInt(1, olderThanInHours);
+      long hours = System.currentTimeMillis() / (3600 * 1000);
+      int selDay = (int) (hours % 72);
+      int selfHalfDay = selDay / 12;
 
-      stmt.execute();
+      switchStmt = conn.prepareStatement(SWITCH_CURRENT_PARTITION_QUERY);
+      switchStmt.setInt(1, selfHalfDay);
+      switchStmt.execute();
+
+      int indexOfPartitionToPurge = (selfHalfDay + 1) % 6;
+
+      truncateStmt = conn.createStatement();
+      truncateStmt.execute(TRUNCATE_PREVIOUS_PARTITION_QUERY_FRAGMENT +
+                           "p" + String.valueOf(indexOfPartitionToPurge) + ";");
 
     } catch (SQLException e) {
       throw new IOException(e);
     } finally {
-      IOUtils.quietClose(stmt);
+      IOUtils.quietClose(switchStmt);
+      IOUtils.quietClose(truncateStmt);
       IOUtils.quietClose(conn);
     }
   }

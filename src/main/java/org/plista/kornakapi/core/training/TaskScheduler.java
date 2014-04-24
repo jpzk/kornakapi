@@ -58,12 +58,10 @@ public class TaskScheduler implements Closeable {
     return new JobKey("train-" + recommenderName);
   }
 
-  public void setPurgeOldPreferences(int olderThanHours, String cronExpression) {
+  public void setPurgeOldPreferences(String cronExpression) {
     JobDetail job = JobBuilder.newJob(PurgeOldPreferencesJob.class)
         .withIdentity("purgeOldPreferences")
         .build();
-    job.getJobDataMap().put(PurgeOldPreferencesJob.PURGE_OLDERTHANHOURS_PARAM, olderThanHours);
-
     try {
       // http://www.quartz-scheduler.org/documentation/quartz-2.1.x/tutorials/crontrigger
       CronTrigger trigger = TriggerBuilder.newTrigger()

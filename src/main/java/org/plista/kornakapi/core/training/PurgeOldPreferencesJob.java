@@ -12,27 +12,18 @@ import java.io.IOException;
 
 public class PurgeOldPreferencesJob implements Job {
 
-  public static final String PURGE_OLDERTHANHOURS_PARAM = PurgeOldPreferencesJob.class.getName() + ".olderThanHours";
-
   private static final Logger log = LoggerFactory.getLogger(PurgeOldPreferencesJob.class);
 
   @Override
   public void execute(JobExecutionContext context) throws JobExecutionException {
 
     Components components = Components.instance();
-
-    int olderThanHours = context.getJobDetail().getJobDataMap().getInt(PURGE_OLDERTHANHOURS_PARAM);
-
     Storage storage = components.storage();
 
     log.info("Purging of old preferences started.");
     try {
 
-      if (olderThanHours <= 0) {
-        throw new IllegalStateException("Cannot purge with non-positive older-than-hours setting!");
-      }
-
-      storage.purgePreferences(olderThanHours);
+      storage.purgeOldPreferences();
 
     } catch (IOException e) {
       log.warn("Purging of old preferences failed!", e);

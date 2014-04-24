@@ -91,9 +91,8 @@ public class BigBangServletContextListener implements ServletContextListener {
       TaskScheduler scheduler = new TaskScheduler();
 
       String purgePreferencesCronExpression = conf.getStorageConfiguration().getPurgePreferencesCronExpression();
-      int olderThanHours = conf.getStorageConfiguration().getPurgePreferencesOlderThanHours();
 
-      scheduler.setPurgeOldPreferences(olderThanHours, purgePreferencesCronExpression);
+      scheduler.setPurgeOldPreferences(purgePreferencesCronExpression);
 
       DataModel persistentData = storage.recommenderData();
 

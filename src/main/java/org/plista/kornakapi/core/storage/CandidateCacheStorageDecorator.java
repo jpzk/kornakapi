@@ -74,8 +74,8 @@ public class CandidateCacheStorageDecorator implements Storage {
   }
 
   @Override
-  public void purgePreferences(int olderThanInHours) throws IOException {
-    delegate.purgePreferences(olderThanInHours);
+  public void purgeOldPreferences() throws IOException {
+    delegate.purgeOldPreferences();
   }
 
   @Override
@@ -116,7 +116,7 @@ public class CandidateCacheStorageDecorator implements Storage {
     invalidateCache(label);
   }
 
-  //TODO ideally other calls with to an equal uncached label should block and wait for a single retrieval
+  //TODO ideally other calls to an equal uncached label should block and wait for a single retrieval
   @Override
   public FastIDSet getCandidates(String label) throws IOException {
     FastIDSet candidates = cache.getIfPresent(label);
