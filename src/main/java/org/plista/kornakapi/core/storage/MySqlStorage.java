@@ -38,7 +38,24 @@ import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Set;
 
-/** an implementation of {@link Storage} for MySQL */
+/** an implementation of {@link Storage} for MySQL
+ *
+ * CREATE TABLE taste_preferences (
+ * user_id bigint(20) NOT NULL,
+ * item_id bigint(20) NOT NULL,
+ * preference float NOT NULL,
+ * PRIMARY KEY (user_id,item_id),
+ * KEY item_id (item_id)
+ * );
+ *
+ * CREATE TABLE taste_candidates (
+ * label varchar(255) NOT NULL,
+ * item_id bigint(20) NOT NULL,
+ * PRIMARY KEY (label,item_id)
+ * );
+ * 
+ * ALTER TABLE taste_preferences ADD observed timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+ **/
 public class MySqlStorage implements Storage {
 
   protected final BasicDataSource dataSource;
