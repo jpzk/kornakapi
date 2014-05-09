@@ -49,10 +49,19 @@ public class RecommendServlet extends BaseServlet {
     IDRescorer rescorer = null;
 
 	String label = getParameter(request, Parameters.LABEL, false);
+	String recommenderName = getParameter(request, Parameters.RECOMMENDER, true) + "_" + label;
+    if(!containsTrainer(recommenderName)){
+    	try {
+			createRecommenderForLabel(label);
+		} catch (TasteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
 	FastIDSet candidates = storages().get(label).getCandidates(label);
 	rescorer = new FixedCandidatesIDRescorer(candidates);
     
-	String recommenderName = getParameter(request, Parameters.RECOMMENDER, true) + "_" + label;
+
     KornakapiRecommender recommender = recommender(recommenderName);
 
     try {
