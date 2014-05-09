@@ -89,12 +89,8 @@ public class TrainingScheduler implements Closeable {
     }
   }
 
-  public void immediatelyTrainRecommender(String recommenderName) {
-    try {
+  public void immediatelyTrainRecommender(String recommenderName) throws SchedulerException {
       scheduler.triggerJob(key(recommenderName));
-    } catch (SchedulerException e) {
-      throw new RuntimeException(e);
-    }
   }
 
   @Override

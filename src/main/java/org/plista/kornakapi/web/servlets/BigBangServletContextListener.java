@@ -44,7 +44,6 @@ import org.plista.kornakapi.core.recommender.ItemSimilarityBasedRecommender;
 import org.plista.kornakapi.core.storage.CandidateCacheStorageDecorator;
 import org.plista.kornakapi.core.storage.MySqlMaxPersistentStorage;
 import org.plista.kornakapi.core.storage.MySqlStorage;
-import org.plista.kornakapi.core.storage.Storage;
 import org.plista.kornakapi.core.training.FactorizationbasedInMemoryTrainer;
 import org.plista.kornakapi.core.training.MultithreadedItembasedInMemoryTrainer;
 import org.plista.kornakapi.core.training.StreamingKMeansClustererTrainer;
@@ -61,6 +60,8 @@ import javax.servlet.ServletContextListener;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 
 /** servlet context listener to initialize/shut down the application */
@@ -87,16 +88,27 @@ public class BigBangServletContextListener implements ServletContextListener {
 
       Preconditions.checkState(conf.getNumProcessorsForTraining() > 0, "need at least one processor for training!");
 
+      MySqlMaxPersistentStorage labelsGet = new MySqlMaxPersistentStorage(conf.getStorageConfiguration(), "");
+      LinkedList<String> labels = labelsGet.getAllLabels();
+      labelsGet.close();
       
-      Storage storage;
+      HashMap<String, CandidateCacheStorageDecorator> storages = new HashMap<String, CandidateCacheStorageDecorator>();
       if(conf.getMaxPersistence()){
-    	  storage = new CandidateCacheStorageDecorator(new MySqlMaxPersistentStorage(conf.getStorageConfiguration()));
+    	  
+    	  for(String label: labels){
+    		  storages.put(label, new CandidateCacheStorageDecorator(new MySqlMaxPersistentStorage(conf.getStorageConfiguration(), label)));
+    	  }
       }else{
-    	  storage = new CandidateCacheStorageDecorator(new MySqlStorage(conf.getStorageConfiguration()));
+    	  for(String label: labels){
+    		  storages.put(label,  new CandidateCacheStorageDecorator(new MySqlStorage(conf.getStorageConfiguration(), label)));
+    	  }
       }
       
+	  HashMap<String, DataModel> persitentDatas = new HashMap<String, DataModel>();
+	  for(String label: labels){
+	      persitentDatas.put(label, storages.get(label).recommenderData());
+	  }
 
-	DataModel persistentData = storage.recommenderData();
 
       Map<String, KornakapiRecommender> recommenders = Maps.newHashMap();
       Map<String, Trainer> trainers = Maps.newHashMap();
@@ -105,119 +117,126 @@ public class BigBangServletContextListener implements ServletContextListener {
       DelegatingPreferenceChangeListener preferenceChangeListener = new DelegatingPreferenceChangeListener();
 
       for (ItembasedRecommenderConfig itembasedConf : conf.getItembasedRecommenders()) {
+    	for(String label: labels){
+    	       String name = itembasedConf.getName() +"_"+ label;
 
-        String name = itembasedConf.getName();
+    	        File modelFile = modelFile(conf, name);
 
-        File modelFile = modelFile(conf, name);
+    	        if (!modelFile.exists()) {
+    	          boolean created = modelFile.createNewFile();
+    	          if (!created) {
+    	            throw new IllegalStateException("Cannot create file in model directory" + conf.getModelDirectory());
+    	          }
+    	        }
 
-        if (!modelFile.exists()) {
-          boolean created = modelFile.createNewFile();
-          if (!created) {
-            throw new IllegalStateException("Cannot create file in model directory" + conf.getModelDirectory());
-          }
-        }
+    	        ItemSimilarity itemSimilarity = new FileItemSimilarity(modelFile);
+    	        AllSimilarItemsCandidateItemsStrategy allSimilarItemsStrategy =
+    	            new AllSimilarItemsCandidateItemsStrategy(itemSimilarity);
+    	        KornakapiRecommender recommender = new ItemSimilarityBasedRecommender(persitentDatas.get(label), itemSimilarity,
+    	            allSimilarItemsStrategy, allSimilarItemsStrategy);
 
-        ItemSimilarity itemSimilarity = new FileItemSimilarity(modelFile);
-        AllSimilarItemsCandidateItemsStrategy allSimilarItemsStrategy =
-            new AllSimilarItemsCandidateItemsStrategy(itemSimilarity);
-        KornakapiRecommender recommender = new ItemSimilarityBasedRecommender(persistentData, itemSimilarity,
-            allSimilarItemsStrategy, allSimilarItemsStrategy);
+    	        recommenders.put(name, recommender);
+    	        trainers.put(name, new MultithreadedItembasedInMemoryTrainer(itembasedConf));
 
-        recommenders.put(name, recommender);
-        trainers.put(name, new MultithreadedItembasedInMemoryTrainer(itembasedConf));
+    	        String cronExpression = itembasedConf.getRetrainCronExpression();
+    	        if (cronExpression == null) {
+    	          scheduler.addRecommenderTrainingJob(name);
+    	        } else {
+    	          scheduler.addRecommenderTrainingJobWithCronSchedule(name, cronExpression);
+    	        }
 
-        String cronExpression = itembasedConf.getRetrainCronExpression();
-        if (cronExpression == null) {
-          scheduler.addRecommenderTrainingJob(name);
-        } else {
-          scheduler.addRecommenderTrainingJobWithCronSchedule(name, cronExpression);
-        }
+    	        if (itembasedConf.getRetrainAfterPreferenceChanges() !=
+    	            RecommenderConfig.DONT_RETRAIN_ON_PREFERENCE_CHANGES) {
+    	          preferenceChangeListener.addDelegate(new InMemoryPreferenceChangeListener(scheduler, name,
+    	              itembasedConf.getRetrainAfterPreferenceChanges()));
+    	        }
 
-        if (itembasedConf.getRetrainAfterPreferenceChanges() !=
-            RecommenderConfig.DONT_RETRAIN_ON_PREFERENCE_CHANGES) {
-          preferenceChangeListener.addDelegate(new InMemoryPreferenceChangeListener(scheduler, name,
-              itembasedConf.getRetrainAfterPreferenceChanges()));
-        }
-
-        log.info("Created ItemBasedRecommender [{}] using similarity [{}] and [{}] similar items per item",
-            new Object[] { name, itembasedConf.getSimilarityClass(), itembasedConf.getSimilarItemsPerItem() });
+    	        log.info("Created ItemBasedRecommender [{}] using similarity [{}] and [{}] similar items per item",
+    	            new Object[] { name, itembasedConf.getSimilarityClass(), itembasedConf.getSimilarItemsPerItem() });
+    	}
+ 
       }     
      
       for (StreamingKMeansClustererConfig streamingKMeansClustererConf : conf.getStreamingKMeansClusterer()) {
-      
-    	  String name = streamingKMeansClustererConf.getName();
-    	  
-          File modelFile = new File(conf.getModelDirectory(), name + ".model");
+      	for(String label: labels){
+         	  String name = streamingKMeansClustererConf.getName() +"_"+ label;
+        	  
+              File modelFile = new File(conf.getModelDirectory(), name + ".model");
 
-          PersistenceStrategy persistence = new FilePersistenceStrategy(modelFile);
+              PersistenceStrategy persistence = new FilePersistenceStrategy(modelFile);
 
-          if (!modelFile.exists()) {
-            createEmptyFactorization(persistence);
-          }
-          StreamingKMeansClassifierModel model = new StreamingKMeansClassifierModel(conf.getStorageConfiguration()); 
-          StreamingKMeansClustererTrainer clusterer = new StreamingKMeansClustererTrainer( streamingKMeansClustererConf, model);
-          trainers.put(name,clusterer);
-          
-          StreamingKMeansClassifierRecommender recommender = new StreamingKMeansClassifierRecommender(model);
-          recommenders.put(name, recommender);
-          
-          String cronExpression = streamingKMeansClustererConf.getRetrainCronExpression();
-          if (cronExpression == null) {
-            scheduler.addRecommenderTrainingJob(name);
-          } else {
-            scheduler.addRecommenderTrainingJobWithCronSchedule(name, cronExpression);
-          }
-          
-          if (streamingKMeansClustererConf.getRetrainAfterPreferenceChanges() !=
-                  RecommenderConfig.DONT_RETRAIN_ON_PREFERENCE_CHANGES) {
-                preferenceChangeListener.addDelegate(new InMemoryPreferenceChangeListener(scheduler, name,
-                		streamingKMeansClustererConf.getRetrainAfterPreferenceChanges()));
+              if (!modelFile.exists()) {
+                createEmptyFactorization(persistence);
               }
-          
-          log.info("Created StreamingKMeansClusterer [{}] with [{}] minclusters and [{}] cutoff distance",
-              new Object[] { name, streamingKMeansClustererConf.getDesiredNumCluster(), streamingKMeansClustererConf.getDistanceCutoff()}); 
+              StreamingKMeansClassifierModel model = new StreamingKMeansClassifierModel(conf.getStorageConfiguration(),label); 
+              StreamingKMeansClustererTrainer clusterer = new StreamingKMeansClustererTrainer( streamingKMeansClustererConf, model);
+              trainers.put(name,clusterer);
+              
+              StreamingKMeansClassifierRecommender recommender = new StreamingKMeansClassifierRecommender(model);
+              recommenders.put(name, recommender);
+              
+              String cronExpression = streamingKMeansClustererConf.getRetrainCronExpression();
+              if (cronExpression == null) {
+                scheduler.addRecommenderTrainingJob(name);
+              } else {
+                scheduler.addRecommenderTrainingJobWithCronSchedule(name, cronExpression);
+              }
+              
+              if (streamingKMeansClustererConf.getRetrainAfterPreferenceChanges() !=
+                      RecommenderConfig.DONT_RETRAIN_ON_PREFERENCE_CHANGES) {
+                    preferenceChangeListener.addDelegate(new InMemoryPreferenceChangeListener(scheduler, name,
+                    		streamingKMeansClustererConf.getRetrainAfterPreferenceChanges()));
+                  }
+              
+              log.info("Created StreamingKMeansClusterer [{}] with [{}] minclusters and [{}] cutoff distance",
+                  new Object[] { name, streamingKMeansClustererConf.getDesiredNumCluster(), streamingKMeansClustererConf.getDistanceCutoff()}); 
+      	}
+ 
       }
    
       for (FactorizationbasedRecommenderConfig factorizationbasedConf : conf.getFactorizationbasedRecommenders()) {
+    	  for(String label: labels){
+    	      String name = factorizationbasedConf.getName() +"_"+ label;
 
-        String name = factorizationbasedConf.getName();
+    	        File modelFile = new File(conf.getModelDirectory(), name + ".model");
 
-        File modelFile = new File(conf.getModelDirectory(), name + ".model");
+    	        PersistenceStrategy persistence = new FilePersistenceStrategy(modelFile);
 
-        PersistenceStrategy persistence = new FilePersistenceStrategy(modelFile);
+    	        if (!modelFile.exists()) {
+    	          createEmptyFactorization(persistence);
+    	        }
 
-        if (!modelFile.exists()) {
-          createEmptyFactorization(persistence);
-        }
+    	        CandidateItemsStrategy allUnknownItemsStrategy =
+    	            new CachingAllUnknownItemsCandidateItemsStrategy(persitentDatas.get(label));
 
-        CandidateItemsStrategy allUnknownItemsStrategy =
-            new CachingAllUnknownItemsCandidateItemsStrategy(persistentData);
+    	        FoldingFactorizationBasedRecommender svdRecommender = new FoldingFactorizationBasedRecommender(persitentDatas.get(label),
+    	            allUnknownItemsStrategy, persistence);
 
-        FoldingFactorizationBasedRecommender svdRecommender = new FoldingFactorizationBasedRecommender(persistentData,
-            allUnknownItemsStrategy, persistence);
+    	        recommenders.put(name, svdRecommender);
+    	        trainers.put(name, new FactorizationbasedInMemoryTrainer(factorizationbasedConf));
 
-        recommenders.put(name, svdRecommender);
-        trainers.put(name, new FactorizationbasedInMemoryTrainer(factorizationbasedConf));
+    	        String cronExpression = factorizationbasedConf.getRetrainCronExpression();
+    	        if (cronExpression == null) {
+    	          scheduler.addRecommenderTrainingJob(name);
+    	        } else {
+    	          scheduler.addRecommenderTrainingJobWithCronSchedule(name, cronExpression);
+    	          scheduler.immediatelyTrainRecommender(name);
+    	        }
 
-        String cronExpression = factorizationbasedConf.getRetrainCronExpression();
-        if (cronExpression == null) {
-          scheduler.addRecommenderTrainingJob(name);
-        } else {
-          scheduler.addRecommenderTrainingJobWithCronSchedule(name, cronExpression);
-        }
+    	        if (factorizationbasedConf.getRetrainAfterPreferenceChanges() !=
+    	            RecommenderConfig.DONT_RETRAIN_ON_PREFERENCE_CHANGES) {
+    	          preferenceChangeListener.addDelegate(new InMemoryPreferenceChangeListener(scheduler, name,
+    	              factorizationbasedConf.getRetrainAfterPreferenceChanges()));
+    	        }
 
-        if (factorizationbasedConf.getRetrainAfterPreferenceChanges() !=
-            RecommenderConfig.DONT_RETRAIN_ON_PREFERENCE_CHANGES) {
-          preferenceChangeListener.addDelegate(new InMemoryPreferenceChangeListener(scheduler, name,
-              factorizationbasedConf.getRetrainAfterPreferenceChanges()));
-        }
-
-        log.info("Created FactorizationBasedRecommender [{}] using [{}] features and [{}] iterations",
-            new Object[] { name, factorizationbasedConf.getNumberOfFeatures(),
-                factorizationbasedConf.getNumberOfIterations() });
+    	        log.info("Created FactorizationBasedRecommender [{}] using [{}] features and [{}] iterations",
+    	            new Object[] { name, factorizationbasedConf.getNumberOfFeatures(),
+    	                factorizationbasedConf.getNumberOfIterations() });
+    	  }
+  
       }
 
-      Components.init(conf, storage, recommenders, trainers, scheduler, preferenceChangeListener);
+      Components.init(conf, storages, recommenders, trainers, scheduler, preferenceChangeListener, labels);
 
       scheduler.start();
 
@@ -238,8 +257,10 @@ public class BigBangServletContextListener implements ServletContextListener {
   @Override
   public void contextDestroyed(ServletContextEvent event) {
     Components components = Components.instance();
-
-    Closeables.closeQuietly(components.storage());
+    LinkedList<String> labels = components.getLabels();
+    for(String label: labels){
+        Closeables.closeQuietly(components.storages().get(label));
+    }
     Closeables.closeQuietly(components.scheduler());
   }
 }

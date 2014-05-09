@@ -24,5 +24,5 @@ import java.io.IOException;
 /** train a recommender */
 public interface Trainer {
 
-  void train(File modelDirectory, Storage storage, Recommender recommender, int numProcessors) throws IOException;
+  void train(File modelDirectory, Storage storage, Recommender recommender, int numProcessors, String recommenderName) throws IOException;
 }

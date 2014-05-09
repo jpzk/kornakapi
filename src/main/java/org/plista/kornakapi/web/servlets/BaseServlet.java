@@ -16,15 +16,19 @@
 package org.plista.kornakapi.web.servlets;
 
 import org.plista.kornakapi.KornakapiRecommender;
-import org.plista.kornakapi.core.storage.Storage;
+import org.plista.kornakapi.core.storage.CandidateCacheStorageDecorator;
+import org.plista.kornakapi.core.training.Trainer;
 import org.plista.kornakapi.core.training.TrainingScheduler;
 import org.plista.kornakapi.core.training.preferencechanges.PreferenceChangeListener;
 import org.plista.kornakapi.web.Components;
+import org.plista.kornakapi.core.config.Configuration;
 import org.plista.kornakapi.web.InvalidParameterException;
 import org.plista.kornakapi.web.MissingParameterException;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
+
+import java.util.HashMap;
 import java.util.regex.Pattern;
 
 /** base class for all servlets */
@@ -35,17 +39,30 @@ public abstract class BaseServlet extends HttpServlet {
   private Components getComponents() {
     return Components.instance();
   }
+  
+  protected Configuration getConfiguration(){
+	  return getComponents().getConfiguration();
+  }
+  
+  protected void setRecommender(String name, KornakapiRecommender recommender){
+	  getComponents().setRecommender(name, recommender);
+  }
 
   protected KornakapiRecommender recommender(String name) {
     return getComponents().recommender(name);
   }
-
+  protected void setTrainer(String name, Trainer trainer){
+	 getComponents().setTrainer(name, trainer);
+  }
+  protected boolean containsTrainer(String name){
+	  return getComponents().trainer(name) != null;
+  }
   protected TrainingScheduler scheduler() {
     return getComponents().scheduler();
   }
 
-  protected Storage storage() {
-    return getComponents().storage();
+  protected HashMap<String, CandidateCacheStorageDecorator> storages() {
+    return getComponents().storages();
   }
 
   protected PreferenceChangeListener preferenceChangeListener() {

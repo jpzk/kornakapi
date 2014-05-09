@@ -32,9 +32,11 @@ public class StreamingKMeansClassifierModel {
 	private StorageConfiguration conf;
 	private FastIDSet allItems;
 	private int initialDim = 300;
+	private String label;
 	
-	public StreamingKMeansClassifierModel(StorageConfiguration conf){
+	public StreamingKMeansClassifierModel(StorageConfiguration conf, String label){
 		this.conf = conf;
+		this.label = label;
 	}
 	
 	public void setData(StreamingKMeansDataObject data){
@@ -134,7 +136,7 @@ public class StreamingKMeansClassifierModel {
 	 * @return
 	 */
 	public List<Centroid> getNewData(){
-		MySqlKMeansDataFilter extractor = new MySqlKMeansDataFilter(conf);
+		MySqlKMeansDataFilter extractor = new MySqlKMeansDataFilter(conf, label);
 		StreamingKMeansDataObject data = extractor.getNewData(userids, dim);
 		try {
 			extractor.close();
@@ -179,7 +181,7 @@ public class StreamingKMeansClassifierModel {
 	 * @return
 	 */
 	public ArrayList<Centroid> getData(){
-		MySqlKMeansDataFilter extractor = new MySqlKMeansDataFilter(conf);
+		MySqlKMeansDataFilter extractor = new MySqlKMeansDataFilter(conf, label);
 		StreamingKMeansDataObject data = extractor.getData();
 		try {
 			extractor.close();

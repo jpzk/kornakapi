@@ -43,17 +43,16 @@ public class RecommendServlet extends BaseServlet {
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-    String recommenderName = getParameter(request, Parameters.RECOMMENDER, true);
+
     int howMany = getParameterAsInt(request, Parameters.HOW_MANY, Parameters.DEFAULT_HOW_MANY);
 
     IDRescorer rescorer = null;
 
-    if (hasParameter(request, Parameters.LABEL)) {
-      String label = getParameter(request, Parameters.LABEL, false);
-      FastIDSet candidates = storage().getCandidates(label);
-      rescorer = new FixedCandidatesIDRescorer(candidates);
-    }
-
+	String label = getParameter(request, Parameters.LABEL, false);
+	FastIDSet candidates = storages().get(label).getCandidates(label);
+	rescorer = new FixedCandidatesIDRescorer(candidates);
+    
+	String recommenderName = getParameter(request, Parameters.RECOMMENDER, true) + "_" + label;
     KornakapiRecommender recommender = recommender(recommenderName);
 
     try {

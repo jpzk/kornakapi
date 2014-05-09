@@ -33,14 +33,14 @@ public abstract class AbstractTrainer implements Trainer {
   }
 
   @Override
-  public void train(File modelDirectory, Storage storage, Recommender recommender, int numProcessors)
+  public void train(File modelDirectory, Storage storage, Recommender recommender, int numProcessors, String recommenderName)
       throws IOException {
 
-    File targetFile = new File(modelDirectory, conf.getName() + "-training.model");
+    File targetFile = new File(modelDirectory, recommenderName + "-training.model");
 
     doTrain(targetFile, storage.trainingData(), numProcessors);
 
-    targetFile.renameTo(new File(modelDirectory, conf.getName() + ".model"));
+    targetFile.renameTo(new File(modelDirectory, recommenderName + ".model"));
     recommender.refresh(null);
   }
 

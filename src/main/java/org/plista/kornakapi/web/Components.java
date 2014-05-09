@@ -16,42 +16,48 @@
 package org.plista.kornakapi.web;
 
 import com.google.common.base.Preconditions;
+
 import org.plista.kornakapi.KornakapiRecommender;
 import org.plista.kornakapi.core.config.Configuration;
+import org.plista.kornakapi.core.storage.CandidateCacheStorageDecorator;
 import org.plista.kornakapi.core.storage.Storage;
 import org.plista.kornakapi.core.training.Trainer;
 import org.plista.kornakapi.core.training.TrainingScheduler;
 import org.plista.kornakapi.core.training.preferencechanges.PreferenceChangeListener;
 
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 
 /** all singleton instances used in the application, used for dependency injection */
 public class Components {
 
   private final Configuration conf;
-  private final Storage storage;
+  private final HashMap<String, CandidateCacheStorageDecorator> storages;
   private final Map<String, KornakapiRecommender> recommenders;
   private final Map<String, Trainer> trainers;
   private final TrainingScheduler scheduler;
   private final PreferenceChangeListener preferenceChangeListener;
+  private final LinkedList<String> labels;
 
   private static Components INSTANCE;
 
-  private Components(Configuration conf, Storage storage, Map<String, KornakapiRecommender> recommenders,
-        Map<String, Trainer> trainers, TrainingScheduler scheduler, PreferenceChangeListener preferenceChangeListener) {
+  private Components(Configuration conf, HashMap<String,CandidateCacheStorageDecorator> storages, Map<String, KornakapiRecommender> recommenders,
+        Map<String, Trainer> trainers, TrainingScheduler scheduler, PreferenceChangeListener preferenceChangeListener, LinkedList<String>labels) {
     this.conf = conf;
-    this.storage = storage;
+    this.storages = storages;
     this.recommenders = recommenders;
     this.trainers = trainers;
     this.scheduler = scheduler;
     this.preferenceChangeListener = preferenceChangeListener;
+    this.labels = labels;
   }
 
-  public static synchronized void init(Configuration conf, Storage storage,
+  public static synchronized void init(Configuration conf, HashMap<String,CandidateCacheStorageDecorator> storages,
       Map<String, KornakapiRecommender> recommenders, Map<String, Trainer> trainers, TrainingScheduler scheduler,
-      PreferenceChangeListener preferenceChangeListener) {
+      PreferenceChangeListener preferenceChangeListener, LinkedList<String> labels) {
     Preconditions.checkState(INSTANCE == null);
-    INSTANCE = new Components(conf, storage, recommenders, trainers, scheduler, preferenceChangeListener);
+    INSTANCE = new Components(conf, storages, recommenders, trainers, scheduler, preferenceChangeListener, labels);
   }
 
   public static Components instance() {
@@ -66,13 +72,21 @@ public class Components {
   public KornakapiRecommender recommender(String name) {
     return recommenders.get(name);
   }
+  
+  public void setRecommender(String name, KornakapiRecommender recommender){
+	  recommenders.put(name, recommender);
+  }
 
   public Trainer trainer(String name) {
     return trainers.get(name);
   }
+  
+  public void setTrainer(String name, Trainer trainer){
+	  trainers.put(name, trainer);
+  }
 
-  public Storage storage() {
-    return storage;
+  public HashMap<String, CandidateCacheStorageDecorator> storages() {
+    return storages;
   }
 
   public TrainingScheduler scheduler() {
@@ -81,5 +95,9 @@ public class Components {
 
   public PreferenceChangeListener preferenceChangeListener() {
     return preferenceChangeListener;
+  }
+  
+  public LinkedList<String> getLabels(){
+	  return this.labels;
   }
 }

@@ -16,6 +16,7 @@
 package org.plista.kornakapi.web.servlets;
 
 import com.google.common.io.Closeables;
+
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
@@ -28,6 +29,7 @@ import org.plista.kornakapi.web.Parameters;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
@@ -45,8 +47,8 @@ public class BatchAddCandidatesServlet extends BaseServlet {
     InputStream in = null;
 
     boolean fileProcessed = false;
-
-    Storage storage = storage();
+    String label = getParameter(request, Parameters.LABEL, true);
+    Storage storage = storages().get(label);
 
     try {
       fileItems = upload.getItemIterator(request);

@@ -33,8 +33,8 @@ public class MySqlKMeansDataFilter extends MySqlStorage{
  * 	
  * @param storageConf
  */
-	 public MySqlKMeansDataFilter(StorageConfiguration storageConf){
-			super(storageConf);
+	 public MySqlKMeansDataFilter(StorageConfiguration storageConf, String label){
+			super(storageConf, label);
 			this.minNumUserRatings = storageConf.getMinNumUserRatings();
 	  }
 	 /**

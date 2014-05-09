@@ -38,13 +38,14 @@ public class TrainRecommenderJob implements Job {
     Components components = Components.instance();
 
     String recommenderName = context.getJobDetail().getJobDataMap().getString(RECOMMENDER_NAME_PARAM);
+    String label = recommenderName.substring(recommenderName.indexOf("_")+1);
 
     Trainer trainer = components.trainer(recommenderName);
 
     log.info("Training for recommender [{}] started.", recommenderName);
     try {
-      trainer.train(new File(components.getConfiguration().getModelDirectory()), components.storage(),
-          components.recommender(recommenderName), components.getConfiguration().getNumProcessorsForTraining());
+      trainer.train(new File(components.getConfiguration().getModelDirectory()), components.storages().get(label),
+          components.recommender(recommenderName), components.getConfiguration().getNumProcessorsForTraining(), recommenderName);
     } catch (IOException e) {
       log.warn("Training of recommender [" + recommenderName + "] failed!", e);
     }

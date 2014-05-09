@@ -39,7 +39,7 @@ public class SetPreferenceServlet extends BaseServlet {
     }
    
 
-    storage().setPreference(userID, itemID, value);
+    storages().values().iterator().next().setPreference(userID, itemID, value);
     preferenceChangeListener().notifyOfPreferenceChange();
   }
   /**
