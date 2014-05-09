@@ -53,8 +53,6 @@ import java.util.List;
 /** servlet to manually trigger the training for a recommender */
 public class TrainServlet extends BaseServlet {
 	
-	private static final Logger log = LoggerFactory.getLogger(TrainServlet.class);
-
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
@@ -73,66 +71,5 @@ public class TrainServlet extends BaseServlet {
 	} catch (SchedulerException e) {
 		e.printStackTrace();
 	}
-    
-
   }
-  private void createRecommenderForLabel(String label) throws IOException, TasteException{
-	  	Configuration conf = getConfiguration();
-	  	List<FactorizationbasedRecommenderConfig> factorizationbasedConfs= conf.getFactorizationbasedRecommenders();
-        FactorizationbasedRecommenderConfig factorizationbasedConf =factorizationbasedConfs.get(0);
-
-        String name = factorizationbasedConf.getName() +"_"+ label;
-        if(conf.getMaxPersistence()){
-        	storages().put(label, new CandidateCacheStorageDecorator(new MySqlMaxPersistentStorage(conf.getStorageConfiguration(), label)));
-        }else{
-      		storages().put(label,  new CandidateCacheStorageDecorator(new MySqlStorage(conf.getStorageConfiguration(), label)));
-
-        }
-
-        File modelFile = new File(conf.getModelDirectory(), name + ".model");
- 
-        PersistenceStrategy persistence = new FilePersistenceStrategy(modelFile);
-
-        if (!modelFile.exists()) {
-          createEmptyFactorization(persistence);
-        }
-
-        DataModel persistenData = storages().get(label).recommenderData();
-        
-        CandidateItemsStrategy allUnknownItemsStrategy =
-            new CachingAllUnknownItemsCandidateItemsStrategy(persistenData);
-
-        FoldingFactorizationBasedRecommender svdRecommender = new FoldingFactorizationBasedRecommender(persistenData,
-            allUnknownItemsStrategy, persistence);
-
-        setRecommender(name, svdRecommender);
-        setTrainer(name, new FactorizationbasedInMemoryTrainer(factorizationbasedConf));
-
-        String cronExpression = factorizationbasedConf.getRetrainCronExpression();
-        if (cronExpression == null) {
-        	scheduler().addRecommenderTrainingJob(name);
-        } else {
-        	scheduler().addRecommenderTrainingJobWithCronSchedule(name, cronExpression);
-        	try {
-				scheduler().immediatelyTrainRecommender(name);
-			} catch (SchedulerException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-        }
-
-        if (factorizationbasedConf.getRetrainAfterPreferenceChanges() !=
-            RecommenderConfig.DONT_RETRAIN_ON_PREFERENCE_CHANGES) {
-        	((DelegatingPreferenceChangeListener)preferenceChangeListener()).addDelegate(new InMemoryPreferenceChangeListener(scheduler(), name,
-              factorizationbasedConf.getRetrainAfterPreferenceChanges()));
-        }
-
-        log.info("Added FactorizationBasedRecommender [{}] using [{}] features and [{}] iterations for label: {}",
-            new Object[] { name, factorizationbasedConf.getNumberOfFeatures(),
-                factorizationbasedConf.getNumberOfIterations() , label});
-  }
-  private void createEmptyFactorization(PersistenceStrategy strategy) throws IOException {
-	    strategy.maybePersist(new Factorization(new FastByIDMap<Integer>(0), new FastByIDMap<Integer>(0),
-	        new double[0][0], new double[0][0]));
-	  }
 }
