@@ -38,8 +38,10 @@ public class SetPreferenceServlet extends BaseServlet {
     	itemID = this.idRemapping(itemID);
     }
    
+    if(storages().values().iterator().hasNext()){
+        storages().values().iterator().next().setPreference(userID, itemID, value);
+    }
 
-    storages().values().iterator().next().setPreference(userID, itemID, value);
     preferenceChangeListener().notifyOfPreferenceChange();
   }
   /**
