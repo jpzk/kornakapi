@@ -243,7 +243,7 @@ public class BigBangServletContextListener implements ServletContextListener {
       scheduler.start();
 
     } catch (Exception e) {
-    	log.info("Something bad happend:" , e.getMessage());
+    	log.info("Something bad happend: {}" , e.getMessage());
     	throw new RuntimeException(e);
     }
   }
