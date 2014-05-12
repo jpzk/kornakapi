@@ -77,7 +77,7 @@ public class BigBangServletContextListener implements ServletContextListener {
   @Override
   public void contextInitialized(ServletContextEvent event) {
     try {
-
+      log.info("Try started");
       String configFileLocation = System.getProperty(CONFIG_PROPERTY);
       Preconditions.checkState(configFileLocation != null, "configuration file not set!");
 
@@ -117,7 +117,7 @@ public class BigBangServletContextListener implements ServletContextListener {
 
       TrainingScheduler scheduler = new TrainingScheduler();
       DelegatingPreferenceChangeListener preferenceChangeListener = new DelegatingPreferenceChangeListener();
-
+      log.info("Setup itemBasedRecommders");
       for (ItembasedRecommenderConfig itembasedConf : conf.getItembasedRecommenders()) {
     	for(String label: labels){
     	       String name = itembasedConf.getName() +"_"+ label;
@@ -158,7 +158,7 @@ public class BigBangServletContextListener implements ServletContextListener {
     	}
  
       }     
-     
+      log.info("Setup KluserRecommders");
       for (StreamingKMeansClustererConfig streamingKMeansClustererConf : conf.getStreamingKMeansClusterer()) {
       	for(String label: labels){
          	  String name = streamingKMeansClustererConf.getName() +"_"+ label;
@@ -195,7 +195,7 @@ public class BigBangServletContextListener implements ServletContextListener {
       	}
  
       }
-   
+      log.info("Setup MFRecommders");
       for (FactorizationbasedRecommenderConfig factorizationbasedConf : conf.getFactorizationbasedRecommenders()) {
     	  for(String label: labels){
     	      String name = factorizationbasedConf.getName() +"_"+ label;
@@ -237,9 +237,9 @@ public class BigBangServletContextListener implements ServletContextListener {
     	  }
   
       }
-
+      log.info("Initialize Components");
       Components.init(conf, storages, recommenders, trainers, scheduler, preferenceChangeListener, labels, dataSource);
-
+      log.info("Start Scheduler");
       scheduler.start();
 
     } catch (Exception e) {
