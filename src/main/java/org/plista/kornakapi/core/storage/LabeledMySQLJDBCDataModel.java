@@ -168,7 +168,7 @@ public class LabeledMySQLJDBCDataModel extends AbstractJDBCDataModel{
 	        // removePreference SQL
 	        "DELETE FROM " + preferenceTable + " WHERE " + userIDColumn + "=? AND " + itemIDColumn + "=?",
 	        // getUsersSQL
-	        "SELECT DISTINCT " + userIDColumn + " FROM " + preferenceTable + " ORDER BY " + userIDColumn + " INNER JOIN " + candidatesTable + " c USING ("+ itemIDColumn + ") WHERE c." +labelColumn +"="+ label,
+	        "SELECT DISTINCT " + userIDColumn + " FROM " + preferenceTable + " ORDER BY " + userIDColumn,
 	        // getItemsSQL
 	        "SELECT DISTINCT " + itemIDColumn + " FROM " + preferenceTable + " INNER JOIN " + candidatesTable + " c USING ("+ itemIDColumn + ") WHERE c." +labelColumn +"="+ label + " ORDER BY " + itemIDColumn,
 	        // getPrefsForItemSQL
