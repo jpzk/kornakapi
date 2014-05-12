@@ -21,6 +21,7 @@ import com.google.common.collect.Maps;
 import com.google.common.io.Closeables;
 import com.google.common.io.Files;
 
+import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.mahout.cf.taste.impl.common.FastByIDMap;
 import org.apache.mahout.cf.taste.impl.recommender.AllSimilarItemsCandidateItemsStrategy;
 import org.apache.mahout.cf.taste.impl.recommender.svd.Factorization;
@@ -87,20 +88,20 @@ public class BigBangServletContextListener implements ServletContextListener {
       Configuration conf = Configuration.fromXML(Files.toString(configFile, Charsets.UTF_8));
 
       Preconditions.checkState(conf.getNumProcessorsForTraining() > 0, "need at least one processor for training!");
-
-      MySqlMaxPersistentStorage labelsGet = new MySqlMaxPersistentStorage(conf.getStorageConfiguration(), "");
+      BasicDataSource dataSource = new BasicDataSource();
+      MySqlMaxPersistentStorage labelsGet = new MySqlMaxPersistentStorage(conf.getStorageConfiguration(), "",dataSource);
       LinkedList<String> labels = labelsGet.getAllLabels();
       labelsGet.close();
       
       HashMap<String, CandidateCacheStorageDecorator> storages = new HashMap<String, CandidateCacheStorageDecorator>();
       if(conf.getMaxPersistence()){
-    	  
+    	  dataSource = new BasicDataSource();
     	  for(String label: labels){
-    		  storages.put(label, new CandidateCacheStorageDecorator(new MySqlMaxPersistentStorage(conf.getStorageConfiguration(), label)));
+    		  storages.put(label, new CandidateCacheStorageDecorator(new MySqlMaxPersistentStorage(conf.getStorageConfiguration(), label,dataSource)));
     	  }
       }else{
     	  for(String label: labels){
-    		  storages.put(label,  new CandidateCacheStorageDecorator(new MySqlStorage(conf.getStorageConfiguration(), label)));
+    		  storages.put(label,  new CandidateCacheStorageDecorator(new MySqlStorage(conf.getStorageConfiguration(), label,dataSource)));
     	  }
       }
       

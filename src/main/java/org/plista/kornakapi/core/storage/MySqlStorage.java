@@ -38,7 +38,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 
 /** an implementation of {@link Storage} for MySQL */
@@ -67,9 +66,9 @@ public class MySqlStorage implements Storage {
 
   private static final Logger log = LoggerFactory.getLogger(MySqlStorage.class);
 
-  public MySqlStorage(StorageConfiguration storageConf, String label) {
+  public MySqlStorage(StorageConfiguration storageConf, String label, BasicDataSource dataSource) {
 
-    BasicDataSource dataSource = new BasicDataSource();
+
     dataSource.setDriverClassName(storageConf.getJdbcDriverClass());
     dataSource.setUrl(storageConf.getJdbcUrl());
     dataSource.setUsername(storageConf.getUsername());

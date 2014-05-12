@@ -16,6 +16,7 @@
 package org.plista.kornakapi.core.storage;
 
 
+import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.mahout.cf.taste.impl.common.FastIDSet;
 import org.apache.mahout.cf.taste.model.Preference;
 import org.apache.mahout.common.IOUtils;
@@ -42,11 +43,11 @@ public class MySqlMaxPersistentStorage extends MySqlStorage implements Storage {
  
   private static final Logger log = LoggerFactory.getLogger(MySqlStorage.class);
    
-  public MySqlMaxPersistentStorage(StorageConfiguration storageConf, String label) {
-	super(storageConf, label);
+  public MySqlMaxPersistentStorage(StorageConfiguration storageConf, String label,BasicDataSource dataSource) {
+	super(storageConf, label, dataSource);
 
   }
-
+ 
   @Override
   public void setPreference(long userID, long itemID, float value) throws IOException {
 	  Connection conn = null;
