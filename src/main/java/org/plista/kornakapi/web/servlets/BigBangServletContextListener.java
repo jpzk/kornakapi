@@ -158,6 +158,7 @@ public class BigBangServletContextListener implements ServletContextListener {
     	}
  
       }     
+      /**
       log.info("Setup KluserRecommders");
       for (StreamingKMeansClustererConfig streamingKMeansClustererConf : conf.getStreamingKMeansClusterer()) {
       	for(String label: labels){
@@ -195,6 +196,7 @@ public class BigBangServletContextListener implements ServletContextListener {
       	}
  
       }
+      **/
       log.info("Setup MFRecommders");
       for (FactorizationbasedRecommenderConfig factorizationbasedConf : conf.getFactorizationbasedRecommenders()) {
     	  for(String label: labels){
