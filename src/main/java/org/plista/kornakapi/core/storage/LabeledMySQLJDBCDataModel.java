@@ -148,27 +148,27 @@ public class LabeledMySQLJDBCDataModel extends AbstractJDBCDataModel{
 	    super(dataSource, preferenceTable, userIDColumn, itemIDColumn, preferenceColumn,
 	        // getPreferenceSQL
 	        "SELECT " + preferenceColumn + " FROM " + preferenceTable + " WHERE " + userIDColumn + "=? AND "
-	            + itemIDColumn + "=?",
+	            + itemIDColumn + "=?" + " INNER JOIN " + candidatesTable + " c USING ("+ itemIDColumn + ") WHERE c." +labelColumn +"="+ label,
 	        // getPreferenceTimeSQL
 	        "SELECT " + timestampColumn + " FROM " + preferenceTable + " WHERE " + userIDColumn + "=? AND "
 	            + itemIDColumn + "=?",
 	        // getUserSQL
 	        "SELECT DISTINCT " + userIDColumn + ", " + itemIDColumn + ", " + preferenceColumn + " FROM " + preferenceTable
-	            + " WHERE " + userIDColumn + "=? ORDER BY " + itemIDColumn,
+	            + " WHERE " + userIDColumn + "=? " + " INNER JOIN " + candidatesTable + " c USING ("+ itemIDColumn + ") WHERE c." +labelColumn +"="+ label +" ORDER BY " + itemIDColumn,
 	        // getAllUsersSQL
 	        "SELECT DISTINCT " + userIDColumn + ", " + itemIDColumn + ", " + preferenceColumn + " FROM " + preferenceTable
-	            + " ORDER BY " + userIDColumn + ", " + itemIDColumn,
+	             + " INNER JOIN " + candidatesTable + " c USING ("+ itemIDColumn + ") WHERE c." +labelColumn +"="+ label + " ORDER BY " + userIDColumn + ", " + itemIDColumn,
 	        // getNumItemsSQL
 	        "SELECT COUNT(DISTINCT " + itemIDColumn + ") FROM " + preferenceTable + " INNER JOIN " + candidatesTable + " c USING ("+ itemIDColumn + ") WHERE c." +labelColumn +"="+ label,
 	        // getNumUsersSQL
-	        "SELECT COUNT(DISTINCT " + userIDColumn + ") FROM " + preferenceTable,
+	        "SELECT COUNT(DISTINCT " + userIDColumn + ") FROM " + preferenceTable + " INNER JOIN " + candidatesTable + " c USING ("+ itemIDColumn + ") WHERE c." +labelColumn +"="+ label,
 	        // setPreferenceSQL
 	        "INSERT INTO " + preferenceTable + '(' + userIDColumn + ',' + itemIDColumn + ',' + preferenceColumn
 	            + ") VALUES (?,?,?) ON DUPLICATE KEY UPDATE " + preferenceColumn + "=?",
 	        // removePreference SQL
 	        "DELETE FROM " + preferenceTable + " WHERE " + userIDColumn + "=? AND " + itemIDColumn + "=?",
 	        // getUsersSQL
-	        "SELECT DISTINCT " + userIDColumn + " FROM " + preferenceTable + " ORDER BY " + userIDColumn,
+	        "SELECT DISTINCT " + userIDColumn + " FROM " + preferenceTable + " ORDER BY " + userIDColumn + " INNER JOIN " + candidatesTable + " c USING ("+ itemIDColumn + ") WHERE c." +labelColumn +"="+ label,
 	        // getItemsSQL
 	        "SELECT DISTINCT " + itemIDColumn + " FROM " + preferenceTable + " INNER JOIN " + candidatesTable + " c USING ("+ itemIDColumn + ") WHERE c." +labelColumn +"="+ label + " ORDER BY " + itemIDColumn,
 	        // getPrefsForItemSQL
