@@ -31,6 +31,6 @@ public class DeleteCandidateServlet extends BaseServlet {
     String label = getParameter(request, Parameters.LABEL, true);
     long itemID = getParameterAsLong(request, Parameters.ITEM_ID, true);
 
-    storages().get(label).deleteCandidate(label, itemID);
+    this.getDomainIndependetStorage().deleteCandidate(label, itemID);
   }
 }

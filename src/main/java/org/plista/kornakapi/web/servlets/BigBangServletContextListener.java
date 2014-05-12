@@ -89,9 +89,9 @@ public class BigBangServletContextListener implements ServletContextListener {
 
       Preconditions.checkState(conf.getNumProcessorsForTraining() > 0, "need at least one processor for training!");
       BasicDataSource dataSource = new BasicDataSource();
-      MySqlMaxPersistentStorage labelsGet = new MySqlMaxPersistentStorage(conf.getStorageConfiguration(), "",dataSource);
-      LinkedList<String> labels = labelsGet.getAllLabels();
-      labelsGet.close();
+      MySqlMaxPersistentStorage domainIndependetStorage = new MySqlMaxPersistentStorage(conf.getStorageConfiguration(), "",dataSource);
+      LinkedList<String> labels = domainIndependetStorage.getAllLabels();
+
       
       dataSource = new BasicDataSource();
       HashMap<String, CandidateCacheStorageDecorator> storages = new HashMap<String, CandidateCacheStorageDecorator>();
@@ -240,7 +240,7 @@ public class BigBangServletContextListener implements ServletContextListener {
   
       }
       log.info("Initialize Components");
-      Components.init(conf, storages, recommenders, trainers, scheduler, preferenceChangeListener, labels, dataSource);
+      Components.init(conf, storages, recommenders, trainers, scheduler, preferenceChangeListener, labels, dataSource, domainIndependetStorage);
       log.info("Start Scheduler");
       scheduler.start();
 
@@ -267,5 +267,6 @@ public class BigBangServletContextListener implements ServletContextListener {
         Closeables.closeQuietly(components.storages().get(label));
     }
     Closeables.closeQuietly(components.scheduler());
+    Closeables.closeQuietly(components.getDomainIndependetStorage());
   }
 }

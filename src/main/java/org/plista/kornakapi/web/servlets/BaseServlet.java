@@ -120,6 +120,10 @@ public abstract class BaseServlet extends HttpServlet {
       throw new InvalidParameterException("Unable to parse parameter [" + name + "]", e);
     }
   }
+  
+  protected MySqlStorage getDomainIndependetStorage(){
+	  return getComponents().getDomainIndependetStorage();
+  }
 
   protected long[] getParameterAsLongArray(HttpServletRequest request, String name) {
     String param = getParameter(request, name, false);

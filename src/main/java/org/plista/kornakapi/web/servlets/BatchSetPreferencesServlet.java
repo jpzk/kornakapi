@@ -49,7 +49,7 @@ public class BatchSetPreferencesServlet extends BaseServlet {
 
     boolean fileProcessed = false;
 
-    Storage storage = storages().values().iterator().next();
+    Storage storage = this.getDomainIndependetStorage();
 
     try {
       fileItems = upload.getItemIterator(request);

@@ -21,6 +21,7 @@ import org.apache.commons.dbcp.BasicDataSource;
 import org.plista.kornakapi.KornakapiRecommender;
 import org.plista.kornakapi.core.config.Configuration;
 import org.plista.kornakapi.core.storage.CandidateCacheStorageDecorator;
+import org.plista.kornakapi.core.storage.MySqlStorage;
 import org.plista.kornakapi.core.storage.Storage;
 import org.plista.kornakapi.core.training.Trainer;
 import org.plista.kornakapi.core.training.TrainingScheduler;
@@ -41,11 +42,12 @@ public class Components {
   private final PreferenceChangeListener preferenceChangeListener;
   private final LinkedList<String> labels;
   private final BasicDataSource dataSource;
+  private final MySqlStorage domainIndependetStorage;
 
   private static Components INSTANCE;
 
   private Components(Configuration conf, HashMap<String,CandidateCacheStorageDecorator> storages, Map<String, KornakapiRecommender> recommenders,
-        Map<String, Trainer> trainers, TrainingScheduler scheduler, PreferenceChangeListener preferenceChangeListener, LinkedList<String>labels, BasicDataSource dataSource) {
+        Map<String, Trainer> trainers, TrainingScheduler scheduler, PreferenceChangeListener preferenceChangeListener, LinkedList<String>labels, BasicDataSource dataSource, MySqlStorage domainIndependetStorage) {
     this.conf = conf;
     this.storages = storages;
     this.recommenders = recommenders;
@@ -54,13 +56,14 @@ public class Components {
     this.preferenceChangeListener = preferenceChangeListener;
     this.labels = labels;
     this.dataSource = dataSource;
+    this.domainIndependetStorage = domainIndependetStorage;
   }
 
   public static synchronized void init(Configuration conf, HashMap<String,CandidateCacheStorageDecorator> storages,
       Map<String, KornakapiRecommender> recommenders, Map<String, Trainer> trainers, TrainingScheduler scheduler,
-      PreferenceChangeListener preferenceChangeListener, LinkedList<String> labels, BasicDataSource dataSource) {
+      PreferenceChangeListener preferenceChangeListener, LinkedList<String> labels, BasicDataSource dataSource, MySqlStorage domainIndependetStorage) {
     Preconditions.checkState(INSTANCE == null);
-    INSTANCE = new Components(conf, storages, recommenders, trainers, scheduler, preferenceChangeListener, labels, dataSource);
+    INSTANCE = new Components(conf, storages, recommenders, trainers, scheduler, preferenceChangeListener, labels, dataSource, domainIndependetStorage);
   }
 
   public static Components instance() {
@@ -90,6 +93,9 @@ public class Components {
 
   public HashMap<String, CandidateCacheStorageDecorator> storages() {
     return storages;
+  }
+  public MySqlStorage getDomainIndependetStorage(){
+	  return this.domainIndependetStorage;
   }
 
   public TrainingScheduler scheduler() {
