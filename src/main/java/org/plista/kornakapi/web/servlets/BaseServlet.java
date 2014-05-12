@@ -15,6 +15,7 @@
 
 package org.plista.kornakapi.web.servlets;
 
+import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.cf.taste.impl.common.FastByIDMap;
 import org.apache.mahout.cf.taste.impl.recommender.svd.Factorization;
@@ -69,6 +70,10 @@ public abstract class BaseServlet extends HttpServlet {
   
   protected void setRecommender(String name, KornakapiRecommender recommender){
 	  getComponents().setRecommender(name, recommender);
+  }
+  
+  protected BasicDataSource getDataSource(){
+	  return getComponents().getDataSource();
   }
 
   protected KornakapiRecommender recommender(String name) {
@@ -159,9 +164,9 @@ public abstract class BaseServlet extends HttpServlet {
 
       String name = factorizationbasedConf.getName() +"_"+ label;
       if(conf.getMaxPersistence()){
-      	storages().put(label, new CandidateCacheStorageDecorator(new MySqlMaxPersistentStorage(conf.getStorageConfiguration(), label)));
+      	storages().put(label, new CandidateCacheStorageDecorator(new MySqlMaxPersistentStorage(conf.getStorageConfiguration(), label,getDataSource())));
       }else{
-    		storages().put(label,  new CandidateCacheStorageDecorator(new MySqlStorage(conf.getStorageConfiguration(), label)));
+    		storages().put(label,  new CandidateCacheStorageDecorator(new MySqlStorage(conf.getStorageConfiguration(), label,getDataSource())));
 
       }
 

@@ -93,9 +93,10 @@ public class BigBangServletContextListener implements ServletContextListener {
       LinkedList<String> labels = labelsGet.getAllLabels();
       labelsGet.close();
       
+      dataSource = new BasicDataSource();
       HashMap<String, CandidateCacheStorageDecorator> storages = new HashMap<String, CandidateCacheStorageDecorator>();
       if(conf.getMaxPersistence()){
-    	  dataSource = new BasicDataSource();
+    	  
     	  for(String label: labels){
     		  storages.put(label, new CandidateCacheStorageDecorator(new MySqlMaxPersistentStorage(conf.getStorageConfiguration(), label,dataSource)));
     	  }
@@ -237,7 +238,7 @@ public class BigBangServletContextListener implements ServletContextListener {
   
       }
 
-      Components.init(conf, storages, recommenders, trainers, scheduler, preferenceChangeListener, labels);
+      Components.init(conf, storages, recommenders, trainers, scheduler, preferenceChangeListener, labels, dataSource);
 
       scheduler.start();
 

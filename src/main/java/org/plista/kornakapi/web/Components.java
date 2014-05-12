@@ -17,6 +17,7 @@ package org.plista.kornakapi.web;
 
 import com.google.common.base.Preconditions;
 
+import org.apache.commons.dbcp.BasicDataSource;
 import org.plista.kornakapi.KornakapiRecommender;
 import org.plista.kornakapi.core.config.Configuration;
 import org.plista.kornakapi.core.storage.CandidateCacheStorageDecorator;
@@ -39,11 +40,12 @@ public class Components {
   private final TrainingScheduler scheduler;
   private final PreferenceChangeListener preferenceChangeListener;
   private final LinkedList<String> labels;
+  private final BasicDataSource dataSource;
 
   private static Components INSTANCE;
 
   private Components(Configuration conf, HashMap<String,CandidateCacheStorageDecorator> storages, Map<String, KornakapiRecommender> recommenders,
-        Map<String, Trainer> trainers, TrainingScheduler scheduler, PreferenceChangeListener preferenceChangeListener, LinkedList<String>labels) {
+        Map<String, Trainer> trainers, TrainingScheduler scheduler, PreferenceChangeListener preferenceChangeListener, LinkedList<String>labels, BasicDataSource dataSource) {
     this.conf = conf;
     this.storages = storages;
     this.recommenders = recommenders;
@@ -51,13 +53,14 @@ public class Components {
     this.scheduler = scheduler;
     this.preferenceChangeListener = preferenceChangeListener;
     this.labels = labels;
+    this.dataSource = dataSource;
   }
 
   public static synchronized void init(Configuration conf, HashMap<String,CandidateCacheStorageDecorator> storages,
       Map<String, KornakapiRecommender> recommenders, Map<String, Trainer> trainers, TrainingScheduler scheduler,
-      PreferenceChangeListener preferenceChangeListener, LinkedList<String> labels) {
+      PreferenceChangeListener preferenceChangeListener, LinkedList<String> labels, BasicDataSource dataSource) {
     Preconditions.checkState(INSTANCE == null);
-    INSTANCE = new Components(conf, storages, recommenders, trainers, scheduler, preferenceChangeListener, labels);
+    INSTANCE = new Components(conf, storages, recommenders, trainers, scheduler, preferenceChangeListener, labels, dataSource);
   }
 
   public static Components instance() {
@@ -95,6 +98,10 @@ public class Components {
 
   public PreferenceChangeListener preferenceChangeListener() {
     return preferenceChangeListener;
+  }
+  
+  public BasicDataSource getDataSource(){
+	  return dataSource;
   }
   
   public LinkedList<String> getLabels(){
