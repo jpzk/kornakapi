@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.mahout.cf.taste.impl.common.FastIDSet;
 import org.apache.mahout.math.Centroid;
 import org.apache.mahout.math.SequentialAccessSparseVector;
@@ -33,10 +34,12 @@ public class StreamingKMeansClassifierModel {
 	private FastIDSet allItems;
 	private int initialDim = 300;
 	private String label;
+	private BasicDataSource dataSource;
 	
-	public StreamingKMeansClassifierModel(StorageConfiguration conf, String label){
+	public StreamingKMeansClassifierModel(StorageConfiguration conf, String label, BasicDataSource dataSource){
 		this.conf = conf;
 		this.label = label;
+		this.dataSource = dataSource;
 	}
 	
 	public void setData(StreamingKMeansDataObject data){
@@ -136,7 +139,7 @@ public class StreamingKMeansClassifierModel {
 	 * @return
 	 */
 	public List<Centroid> getNewData(){
-		MySqlKMeansDataFilter extractor = new MySqlKMeansDataFilter(conf, label);
+		MySqlKMeansDataFilter extractor = new MySqlKMeansDataFilter(conf, label,dataSource);
 		StreamingKMeansDataObject data = extractor.getNewData(userids, dim);
 		try {
 			extractor.close();
@@ -181,7 +184,7 @@ public class StreamingKMeansClassifierModel {
 	 * @return
 	 */
 	public ArrayList<Centroid> getData(){
-		MySqlKMeansDataFilter extractor = new MySqlKMeansDataFilter(conf, label);
+		MySqlKMeansDataFilter extractor = new MySqlKMeansDataFilter(conf, label,dataSource);
 		StreamingKMeansDataObject data = extractor.getData();
 		try {
 			extractor.close();

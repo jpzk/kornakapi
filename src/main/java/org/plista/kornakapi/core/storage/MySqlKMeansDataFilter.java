@@ -8,6 +8,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
+
+import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.mahout.cf.taste.impl.common.FastIDSet;
 import org.apache.mahout.common.IOUtils;
 import org.plista.kornakapi.core.config.StorageConfiguration;
@@ -33,8 +35,8 @@ public class MySqlKMeansDataFilter extends MySqlStorage{
  * 	
  * @param storageConf
  */
-	 public MySqlKMeansDataFilter(StorageConfiguration storageConf, String label){
-			super(storageConf, label);
+	 public MySqlKMeansDataFilter(StorageConfiguration storageConf, String label, BasicDataSource dataSource){
+			super(storageConf, label,dataSource);
 			this.minNumUserRatings = storageConf.getMinNumUserRatings();
 	  }
 	 /**
