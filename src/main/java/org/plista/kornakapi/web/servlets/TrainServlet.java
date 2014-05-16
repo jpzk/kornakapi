@@ -16,39 +16,17 @@
 package org.plista.kornakapi.web.servlets;
 
 import org.apache.mahout.cf.taste.common.TasteException;
-import org.apache.mahout.cf.taste.impl.common.FastByIDMap;
-import org.apache.mahout.cf.taste.impl.recommender.svd.Factorization;
-import org.apache.mahout.cf.taste.impl.recommender.svd.FilePersistenceStrategy;
-import org.apache.mahout.cf.taste.impl.recommender.svd.PersistenceStrategy;
-import org.apache.mahout.cf.taste.model.DataModel;
-import org.apache.mahout.cf.taste.recommender.CandidateItemsStrategy;
-import org.plista.kornakapi.core.config.Configuration;
-import org.plista.kornakapi.core.config.FactorizationbasedRecommenderConfig;
-import org.plista.kornakapi.core.config.RecommenderConfig;
-import org.plista.kornakapi.core.recommender.CachingAllUnknownItemsCandidateItemsStrategy;
-import org.plista.kornakapi.core.recommender.FoldingFactorizationBasedRecommender;
-import org.plista.kornakapi.core.storage.CandidateCacheStorageDecorator;
-import org.plista.kornakapi.core.storage.MySqlMaxPersistentStorage;
-import org.plista.kornakapi.core.storage.MySqlStorage;
-import org.plista.kornakapi.core.training.FactorizationbasedInMemoryTrainer;
-import org.plista.kornakapi.core.training.preferencechanges.DelegatingPreferenceChangeListener;
-import org.plista.kornakapi.core.training.preferencechanges.InMemoryPreferenceChangeListener;
+
 import org.plista.kornakapi.web.Parameters;
 import org.quartz.SchedulerException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Charsets;
-import com.google.common.base.Preconditions;
-import com.google.common.io.Files;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.List;
+
 
 /** servlet to manually trigger the training for a recommender */
 public class TrainServlet extends BaseServlet {

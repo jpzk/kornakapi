@@ -21,7 +21,6 @@ import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.cf.taste.impl.common.FastIDSet;
 import org.apache.mahout.cf.taste.impl.model.GenericDataModel;
-import org.apache.mahout.cf.taste.impl.model.jdbc.MySQLJDBCDataModel;
 import org.apache.mahout.cf.taste.model.DataModel;
 import org.apache.mahout.cf.taste.model.JDBCDataModel;
 import org.apache.mahout.cf.taste.model.Preference;
@@ -391,11 +390,12 @@ public class MySqlStorage implements Storage {
 	          ResultSet.CONCUR_READ_ONLY);
 	      stmt.setLong(1, itemid);
 	      stmt.setFetchDirection(ResultSet.FETCH_FORWARD);
-	      stmt.setFetchSize(1);
+	      stmt.setFetchSize(10);
 	      rs = stmt.executeQuery();
-
-	      String label = rs.getString(1);
-
+	      String label = null;
+	      if(rs.next()){
+	    	  label = rs.getString(1);
+	      }
 
 	      return label;
 

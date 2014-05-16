@@ -22,11 +22,10 @@ import org.plista.kornakapi.KornakapiRecommender;
 import org.plista.kornakapi.core.config.Configuration;
 import org.plista.kornakapi.core.storage.CandidateCacheStorageDecorator;
 import org.plista.kornakapi.core.storage.MySqlStorage;
-import org.plista.kornakapi.core.storage.Storage;
 import org.plista.kornakapi.core.training.Trainer;
 import org.plista.kornakapi.core.training.TrainingScheduler;
 import org.plista.kornakapi.core.training.preferencechanges.DelegatingPreferenceChangeListenerForLabel;
-import org.plista.kornakapi.core.training.preferencechanges.PreferenceChangeListener;
+
 
 import java.util.HashMap;
 import java.util.LinkedList;

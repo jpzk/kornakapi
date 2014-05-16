@@ -40,8 +40,11 @@ public class SetPreferenceServlet extends BaseServlet {
     	itemID = this.idRemapping(itemID);
     }
     this.getDomainIndependetStorage().setPreference(userID, itemID, value);
-    label = this.getDomainIndependetStorage().getItemsLabel(itemID); 
-    preferenceChangeListener().notifyOfPreferenceChange(label);
+    label = this.getDomainIndependetStorage().getItemsLabel(itemID);
+    if(label!=null){
+        preferenceChangeListener().notifyOfPreferenceChange(label);
+    }
+
 
   }
   /**

@@ -17,7 +17,6 @@ package org.plista.kornakapi.core.storage;
 
 
 import org.apache.commons.dbcp.BasicDataSource;
-import org.apache.mahout.cf.taste.impl.common.FastIDSet;
 import org.apache.mahout.cf.taste.model.Preference;
 import org.apache.mahout.common.IOUtils;
 import org.plista.kornakapi.core.config.StorageConfiguration;
@@ -27,7 +26,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Iterator;
 
