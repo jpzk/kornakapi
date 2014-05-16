@@ -89,18 +89,21 @@ public class BigBangServletContextListener implements ServletContextListener {
 
       Preconditions.checkState(conf.getNumProcessorsForTraining() > 0, "need at least one processor for training!");
       BasicDataSource dataSource = new BasicDataSource();
-      MySqlMaxPersistentStorage domainIndependetStorage = new MySqlMaxPersistentStorage(conf.getStorageConfiguration(), "",dataSource);
-      LinkedList<String> labels = domainIndependetStorage.getAllLabels();
+      MySqlStorage domainIndependetStorage = null;
+      LinkedList<String> labels = null;
 
       
       dataSource = new BasicDataSource();
       HashMap<String, CandidateCacheStorageDecorator> storages = new HashMap<String, CandidateCacheStorageDecorator>();
       if(conf.getMaxPersistence()){
-    	  
+    	  domainIndependetStorage = new MySqlMaxPersistentStorage(conf.getStorageConfiguration(), "",dataSource);
+          labels = domainIndependetStorage.getAllLabels();
     	  for(String label: labels){
     		  storages.put(label, new CandidateCacheStorageDecorator(new MySqlMaxPersistentStorage(conf.getStorageConfiguration(), label,dataSource)));
     	  }
       }else{
+    	  domainIndependetStorage = new MySqlStorage(conf.getStorageConfiguration(), "",dataSource);
+          labels = domainIndependetStorage.getAllLabels();
     	  for(String label: labels){
     		  storages.put(label,  new CandidateCacheStorageDecorator(new MySqlStorage(conf.getStorageConfiguration(), label,dataSource)));
     	  }
@@ -197,7 +200,7 @@ public class BigBangServletContextListener implements ServletContextListener {
  
       }
       **/
-      log.info("Setup MFRecommders");
+      log.info("Setup FactorizationBasedRecommders");
       for (FactorizationbasedRecommenderConfig factorizationbasedConf : conf.getFactorizationbasedRecommenders()) {
     	  for(String label: labels){
     	      String name = factorizationbasedConf.getName() +"_"+ label;
