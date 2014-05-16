@@ -25,6 +25,7 @@ import org.plista.kornakapi.core.storage.MySqlStorage;
 import org.plista.kornakapi.core.storage.Storage;
 import org.plista.kornakapi.core.training.Trainer;
 import org.plista.kornakapi.core.training.TrainingScheduler;
+import org.plista.kornakapi.core.training.preferencechanges.DelegatingPreferenceChangeListenerForLabel;
 import org.plista.kornakapi.core.training.preferencechanges.PreferenceChangeListener;
 
 import java.util.HashMap;
@@ -39,7 +40,7 @@ public class Components {
   private final Map<String, KornakapiRecommender> recommenders;
   private final Map<String, Trainer> trainers;
   private final TrainingScheduler scheduler;
-  private final PreferenceChangeListener preferenceChangeListener;
+  private final DelegatingPreferenceChangeListenerForLabel preferenceChangeListener;
   private final LinkedList<String> labels;
   private final BasicDataSource dataSource;
   private final MySqlStorage domainIndependetStorage;
@@ -47,13 +48,13 @@ public class Components {
   private static Components INSTANCE;
 
   private Components(Configuration conf, HashMap<String,CandidateCacheStorageDecorator> storages, Map<String, KornakapiRecommender> recommenders,
-        Map<String, Trainer> trainers, TrainingScheduler scheduler, PreferenceChangeListener preferenceChangeListener, LinkedList<String>labels, BasicDataSource dataSource, MySqlStorage domainIndependetStorage) {
+        Map<String, Trainer> trainers, TrainingScheduler scheduler, DelegatingPreferenceChangeListenerForLabel preferenceChangeListener2, LinkedList<String>labels, BasicDataSource dataSource, MySqlStorage domainIndependetStorage) {
     this.conf = conf;
     this.storages = storages;
     this.recommenders = recommenders;
     this.trainers = trainers;
     this.scheduler = scheduler;
-    this.preferenceChangeListener = preferenceChangeListener;
+    this.preferenceChangeListener = preferenceChangeListener2;
     this.labels = labels;
     this.dataSource = dataSource;
     this.domainIndependetStorage = domainIndependetStorage;
@@ -61,9 +62,9 @@ public class Components {
 
   public static synchronized void init(Configuration conf, HashMap<String,CandidateCacheStorageDecorator> storages,
       Map<String, KornakapiRecommender> recommenders, Map<String, Trainer> trainers, TrainingScheduler scheduler,
-      PreferenceChangeListener preferenceChangeListener, LinkedList<String> labels, BasicDataSource dataSource, MySqlStorage domainIndependetStorage) {
+      DelegatingPreferenceChangeListenerForLabel preferenceChangeListener2, LinkedList<String> labels, BasicDataSource dataSource, MySqlStorage domainIndependetStorage) {
     Preconditions.checkState(INSTANCE == null);
-    INSTANCE = new Components(conf, storages, recommenders, trainers, scheduler, preferenceChangeListener, labels, dataSource, domainIndependetStorage);
+    INSTANCE = new Components(conf, storages, recommenders, trainers, scheduler, preferenceChangeListener2, labels, dataSource, domainIndependetStorage);
   }
 
   public static Components instance() {
@@ -102,7 +103,7 @@ public class Components {
     return scheduler;
   }
 
-  public PreferenceChangeListener preferenceChangeListener() {
+  public DelegatingPreferenceChangeListenerForLabel preferenceChangeListener() {
     return preferenceChangeListener;
   }
   

@@ -40,7 +40,7 @@ public class FactorizationbasedInMemoryTrainer extends AbstractTrainer {
   @Override
   protected void doTrain(File targetFile, DataModel inmemoryData, int numProcessors) throws IOException {
     try {
-    	if(inmemoryData.getNumItems() >5 && inmemoryData.getNumUsers() >10){
+    	if(inmemoryData.getNumItems() >5 && inmemoryData.getNumUsers() >10){//preventing matrix singularity
 	      ALSWRFactorizer factorizer = new ALSWRFactorizer(inmemoryData, conf.getNumberOfFeatures(), conf.getLambda(),
 	          conf.getNumberOfIterations(), conf.isUsesImplicitFeedback(), conf.getAlpha(), numProcessors);
 	      

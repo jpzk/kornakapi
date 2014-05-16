@@ -63,6 +63,8 @@ public class MySqlStorage implements Storage {
       "SELECT item_id FROM taste_candidates WHERE label = ?";
   
   private static final String GET_LABELS = "SELECT DISTINCT label FROM taste_candidates";
+  
+  private static final String GET_ITEMSLABEL = "SELECT label FROM taste_candidates WHERE item_id = ?";
 
   private static final Logger log = LoggerFactory.getLogger(MySqlStorage.class);
 
@@ -376,6 +378,33 @@ public class MySqlStorage implements Storage {
       IOUtils.quietClose(rs, stmt, conn);
     }
   }
+  
+  public String getItemsLabel(long itemid) throws IOException {
+	    Connection conn = null;
+	    PreparedStatement stmt = null;
+	    ResultSet rs = null;
+
+	    try {
+
+	      conn = dataSource.getConnection();
+	      stmt = conn.prepareStatement(GET_ITEMSLABEL, ResultSet.TYPE_FORWARD_ONLY,
+	          ResultSet.CONCUR_READ_ONLY);
+	      stmt.setLong(1, itemid);
+	      stmt.setFetchDirection(ResultSet.FETCH_FORWARD);
+	      stmt.setFetchSize(1);
+	      rs = stmt.executeQuery();
+
+	      String label = rs.getString(1);
+
+
+	      return label;
+
+	    } catch (SQLException e) {
+	      throw new IOException(e);
+	    } finally {
+	      IOUtils.quietClose(rs, stmt, conn);
+	    }
+	  }
 
   @Override
   public void close() throws IOException {

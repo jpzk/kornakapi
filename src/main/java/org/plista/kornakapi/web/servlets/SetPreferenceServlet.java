@@ -20,6 +20,7 @@ import org.plista.kornakapi.web.Parameters;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 
 /** servlet to add preferences */
@@ -31,14 +32,16 @@ public class SetPreferenceServlet extends BaseServlet {
     long userID = getParameterAsLong(request, Parameters.USER_ID, true);
     long itemID = getParameterAsLong(request, Parameters.ITEM_ID, true);
     float value = getParameterAsFloat(request, Parameters.VALUE, true);
+    String label;//getParameterAsLong(request, Parameters.LABEL, true);
     if(userID < 0 || userID > 2147483647){
     	userID = this.idRemapping(userID);
     }
     if(itemID < 0 || itemID > 2147483647){
     	itemID = this.idRemapping(itemID);
     }
-   
     this.getDomainIndependetStorage().setPreference(userID, itemID, value);
+    label = this.getDomainIndependetStorage().getItemsLabel(itemID); 
+    preferenceChangeListener().notifyOfPreferenceChange(label);
 
   }
   /**

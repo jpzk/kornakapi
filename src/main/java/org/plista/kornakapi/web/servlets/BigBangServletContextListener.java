@@ -51,6 +51,7 @@ import org.plista.kornakapi.core.training.StreamingKMeansClustererTrainer;
 import org.plista.kornakapi.core.training.Trainer;
 import org.plista.kornakapi.core.training.TrainingScheduler;
 import org.plista.kornakapi.core.training.preferencechanges.DelegatingPreferenceChangeListener;
+import org.plista.kornakapi.core.training.preferencechanges.DelegatingPreferenceChangeListenerForLabel;
 import org.plista.kornakapi.core.training.preferencechanges.InMemoryPreferenceChangeListener;
 import org.plista.kornakapi.web.Components;
 import org.slf4j.Logger;
@@ -119,7 +120,7 @@ public class BigBangServletContextListener implements ServletContextListener {
       Map<String, Trainer> trainers = Maps.newHashMap();
 
       TrainingScheduler scheduler = new TrainingScheduler();
-      DelegatingPreferenceChangeListener preferenceChangeListener = new DelegatingPreferenceChangeListener();
+      DelegatingPreferenceChangeListenerForLabel preferenceChangeListener = new DelegatingPreferenceChangeListenerForLabel();
       log.info("Setup itemBasedRecommders");
       for (ItembasedRecommenderConfig itembasedConf : conf.getItembasedRecommenders()) {
     	for(String label: labels){
@@ -153,7 +154,7 @@ public class BigBangServletContextListener implements ServletContextListener {
     	        if (itembasedConf.getRetrainAfterPreferenceChanges() !=
     	            RecommenderConfig.DONT_RETRAIN_ON_PREFERENCE_CHANGES) {
     	          preferenceChangeListener.addDelegate(new InMemoryPreferenceChangeListener(scheduler, name,
-    	              itembasedConf.getRetrainAfterPreferenceChanges()));
+    	              itembasedConf.getRetrainAfterPreferenceChanges()), label);
     	        }
 
     	        log.info("Created ItemBasedRecommender [{}] using similarity [{}] and [{}] similar items per item",
@@ -233,7 +234,7 @@ public class BigBangServletContextListener implements ServletContextListener {
     	        if (factorizationbasedConf.getRetrainAfterPreferenceChanges() !=
     	            RecommenderConfig.DONT_RETRAIN_ON_PREFERENCE_CHANGES) {
     	          preferenceChangeListener.addDelegate(new InMemoryPreferenceChangeListener(scheduler, name,
-    	              factorizationbasedConf.getRetrainAfterPreferenceChanges()));
+    	              factorizationbasedConf.getRetrainAfterPreferenceChanges()), label);
     	        }
 
     	        log.info("Created FactorizationBasedRecommender [{}] using [{}] features and [{}] iterations",

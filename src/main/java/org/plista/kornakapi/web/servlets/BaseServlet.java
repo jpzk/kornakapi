@@ -33,6 +33,7 @@ import org.plista.kornakapi.core.training.FactorizationbasedInMemoryTrainer;
 import org.plista.kornakapi.core.training.Trainer;
 import org.plista.kornakapi.core.training.TrainingScheduler;
 import org.plista.kornakapi.core.training.preferencechanges.DelegatingPreferenceChangeListener;
+import org.plista.kornakapi.core.training.preferencechanges.DelegatingPreferenceChangeListenerForLabel;
 import org.plista.kornakapi.core.training.preferencechanges.InMemoryPreferenceChangeListener;
 import org.plista.kornakapi.core.training.preferencechanges.PreferenceChangeListener;
 import org.plista.kornakapi.web.Components;
@@ -93,7 +94,7 @@ public abstract class BaseServlet extends HttpServlet {
     return getComponents().storages();
   }
 
-  protected PreferenceChangeListener preferenceChangeListener() {
+  protected DelegatingPreferenceChangeListenerForLabel preferenceChangeListener() {
     return getComponents().preferenceChangeListener();
   }
 
@@ -208,8 +209,8 @@ public abstract class BaseServlet extends HttpServlet {
 
       if (factorizationbasedConf.getRetrainAfterPreferenceChanges() !=
           RecommenderConfig.DONT_RETRAIN_ON_PREFERENCE_CHANGES) {
-      	((DelegatingPreferenceChangeListener)preferenceChangeListener()).addDelegate(new InMemoryPreferenceChangeListener(scheduler(), name,
-            factorizationbasedConf.getRetrainAfterPreferenceChanges()));
+      	((DelegatingPreferenceChangeListenerForLabel)preferenceChangeListener()).addDelegate(new InMemoryPreferenceChangeListener(scheduler(), name,
+            factorizationbasedConf.getRetrainAfterPreferenceChanges()),label);
       }
 
       log.info("Added FactorizationBasedRecommender [{}] using [{}] features and [{}] iterations for label: {}",
