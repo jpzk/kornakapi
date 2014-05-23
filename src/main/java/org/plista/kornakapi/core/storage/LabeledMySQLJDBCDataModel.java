@@ -159,7 +159,7 @@ public class LabeledMySQLJDBCDataModel extends AbstractJDBCDataModel{
 	        "SELECT DISTINCT " + userIDColumn + ", " + itemIDColumn + ", " + preferenceColumn + " FROM " + preferenceTable
 	             + " INNER JOIN " + candidatesTable + " c USING ("+ itemIDColumn + ") WHERE c." +labelColumn +"="+ label + " ORDER BY " + userIDColumn + ", " + itemIDColumn,
 	        // getNumItemsSQL
-	        "SELECT COUNT(DISTINCT " + itemIDColumn + ") FROM " + preferenceTable + " INNER JOIN " + candidatesTable + " c USING ("+ itemIDColumn + ") WHERE c." +labelColumn +"="+ label,
+	        "SELECT COUNT(DISTINCT " + itemIDColumn + ") FROM " + preferenceTable ,
 	        // getNumUsersSQL
 	        "SELECT COUNT(DISTINCT " + userIDColumn + ") FROM " + preferenceTable + " INNER JOIN " + candidatesTable + " c USING ("+ itemIDColumn + ") WHERE c." +labelColumn +"="+ label,
 	        // setPreferenceSQL
@@ -170,7 +170,7 @@ public class LabeledMySQLJDBCDataModel extends AbstractJDBCDataModel{
 	        // getUsersSQL
 	        "SELECT DISTINCT " + userIDColumn + " FROM (SELECT " + userIDColumn +", " + itemIDColumn +" FROM " + preferenceTable + " INNER JOIN " + candidatesTable +" c USING ("+ itemIDColumn + ") WHERE c." +labelColumn +"="+ label + " ORDER BY " + userIDColumn + ") as t",
 	        // getItemsSQL
-	        "SELECT DISTINCT " + itemIDColumn + " FROM " + preferenceTable + " INNER JOIN " + candidatesTable + " c USING ("+ itemIDColumn + ") WHERE c." +labelColumn +"="+ label + " ORDER BY " + itemIDColumn,
+	        "SELECT DISTINCT " + itemIDColumn + " FROM " + preferenceTable + " ORDER BY " + itemIDColumn,
 	        // getPrefsForItemSQL
 	        "SELECT DISTINCT " + userIDColumn + ", " + itemIDColumn + ", " + preferenceColumn + " FROM " + preferenceTable
 	            + " WHERE " + itemIDColumn + "=? ORDER BY " + userIDColumn,
