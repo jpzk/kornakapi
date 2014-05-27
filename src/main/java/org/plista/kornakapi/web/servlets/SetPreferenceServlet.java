@@ -32,7 +32,7 @@ public class SetPreferenceServlet extends BaseServlet {
     long userID = getParameterAsLong(request, Parameters.USER_ID, true);
     long itemID = getParameterAsLong(request, Parameters.ITEM_ID, true);
     float value = getParameterAsFloat(request, Parameters.VALUE, true);
-    String label;//getParameterAsLong(request, Parameters.LABEL, true);
+    String label = getParameter(request, Parameters.LABEL, true);
     if(userID < 0 || userID > 2147483647){
     	userID = this.idRemapping(userID);
     }
@@ -40,10 +40,8 @@ public class SetPreferenceServlet extends BaseServlet {
     	itemID = this.idRemapping(itemID);
     }
     this.getDomainIndependetStorage().setPreference(userID, itemID, value);
-    label = this.getDomainIndependetStorage().getItemsLabel(itemID);
-    if(label!=null){
-        preferenceChangeListener().notifyOfPreferenceChange(label);
-    }
+    preferenceChangeListener().notifyOfPreferenceChange(label);
+
 
 
   }
