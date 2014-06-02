@@ -19,6 +19,8 @@ import org.apache.mahout.cf.taste.model.DataModel;
 import org.apache.mahout.cf.taste.recommender.Recommender;
 import org.plista.kornakapi.core.config.RecommenderConfig;
 import org.plista.kornakapi.core.storage.Storage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,6 +29,7 @@ import java.io.IOException;
 public abstract class AbstractTrainer implements Trainer {
 
   private final RecommenderConfig conf;
+  private static final Logger log = LoggerFactory.getLogger(AbstractTrainer.class);
 
   protected AbstractTrainer(RecommenderConfig conf) {
     this.conf = conf;
@@ -40,7 +43,11 @@ public abstract class AbstractTrainer implements Trainer {
 
     doTrain(targetFile, storage.trainingData(), numProcessors);
 
-    targetFile.renameTo(new File(modelDirectory, recommenderName + ".model"));
+    boolean fileRenamed = targetFile.renameTo(new File(modelDirectory, recommenderName + ".model"));
+    
+    if (log.isInfoEnabled()) {
+  	  log.info("Using new model {}", fileRenamed);
+    }
     recommender.refresh(null);
   }
 
