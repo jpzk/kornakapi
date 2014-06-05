@@ -40,6 +40,9 @@ public class SetPreferenceServlet extends BaseServlet {
     try{
         label = getParameter(request, Parameters.LABEL, true);
     }catch(MissingParameterException e){
+        if (log.isDebugEnabled()) {
+            log.debug("Fetched label {} from db for item {} ", label, itemID);
+         }
     }
 
     if(userID < 0 || userID > 2147483647){
@@ -50,7 +53,7 @@ public class SetPreferenceServlet extends BaseServlet {
     }
     if(label==null){
     	label = this.getDomainIndependetStorage().getItemsLabel(itemID);
-        if (log.isInfoEnabled()) {
+        if (log.isDebugEnabled()) {
             log.debug("Fetched label {} from db for item {} ", label, itemID);
          }
     }
@@ -58,7 +61,7 @@ public class SetPreferenceServlet extends BaseServlet {
     try{
     	preferenceChangeListener().notifyOfPreferenceChange(label);
     }catch(NullPointerException e){
-        if (log.isInfoEnabled()) {
+        if (log.isDebugEnabled()) {
             log.debug("No recommender assigned for label {}", label);
          }
     }   	
