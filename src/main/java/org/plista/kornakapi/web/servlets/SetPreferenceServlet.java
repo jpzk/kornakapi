@@ -17,6 +17,8 @@ package org.plista.kornakapi.web.servlets;
 
 import org.plista.kornakapi.web.MissingParameterException;
 import org.plista.kornakapi.web.Parameters;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -27,6 +29,7 @@ import java.io.IOException;
 /** servlet to add preferences */
 public class SetPreferenceServlet extends BaseServlet {
 
+  private static final Logger log = LoggerFactory.getLogger(SetPreferenceServlet.class);
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
@@ -37,7 +40,6 @@ public class SetPreferenceServlet extends BaseServlet {
     try{
         label = getParameter(request, Parameters.LABEL, true);
     }catch(MissingParameterException e){
-    	label = null;
     }
 
     if(userID < 0 || userID > 2147483647){
@@ -49,8 +51,15 @@ public class SetPreferenceServlet extends BaseServlet {
     if(label==null){
     	label = this.getDomainIndependetStorage().getItemsLabel(itemID);
     }
-    this.getDomainIndependetStorage().setPreference(userID, itemID, value);   
-    preferenceChangeListener().notifyOfPreferenceChange(label);
+    this.getDomainIndependetStorage().setPreference(userID, itemID, value);  
+    try{
+    	preferenceChangeListener().notifyOfPreferenceChange(label);
+    }catch(NullPointerException e){
+        if (log.isInfoEnabled()) {
+            log.info("No recommender assigned for label {}", label);
+         }
+    }   	
+      
   }
   /**
    * Method maps ids into int range
