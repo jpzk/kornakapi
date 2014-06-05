@@ -65,12 +65,15 @@ public class SetPreferenceServlet extends BaseServlet {
         if (log.isInfoEnabled()) {
             log.info("No recommender assigned for label {}", label);
          }
-    	try {
-			createRecommenderForLabel(label);
-		} catch (TasteException te) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+        if(label != null){
+        	try {
+    			createRecommenderForLabel(label);
+    		} catch (TasteException te) {
+    			// TODO Auto-generated catch block
+    			e.printStackTrace();
+    		}
+        }
+
     }   	
       
   }
