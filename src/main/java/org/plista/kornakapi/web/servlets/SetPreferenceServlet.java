@@ -50,6 +50,9 @@ public class SetPreferenceServlet extends BaseServlet {
     }
     if(label==null){
     	label = this.getDomainIndependetStorage().getItemsLabel(itemID);
+        if (log.isInfoEnabled()) {
+            log.info("Fetched label {} from db for item {} ", label, itemID);
+         }
     }
     this.getDomainIndependetStorage().setPreference(userID, itemID, value);  
     try{
