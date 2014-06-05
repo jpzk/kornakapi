@@ -51,8 +51,8 @@ public class RecommendServlet extends BaseServlet {
 	String label = getParameter(request, Parameters.LABEL, false);
 	String recommenderName = getParameter(request, Parameters.RECOMMENDER, true) + "_" + label;
     if(!containsTrainer(recommenderName)){
-        if (log.isDebugEnabled()) {
-            log.debug("No recommender assigned for label {}", label);
+        if (log.isInfoEnabled()) {
+            log.info("No recommender assigned for label {}", label);
          }
     	try {
 			createRecommenderForLabel(label);

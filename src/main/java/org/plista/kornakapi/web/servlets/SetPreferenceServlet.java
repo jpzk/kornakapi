@@ -62,8 +62,8 @@ public class SetPreferenceServlet extends BaseServlet {
     try{
     	preferenceChangeListener().notifyOfPreferenceChange(label);
     }catch(NullPointerException e){
-        if (log.isDebugEnabled()) {
-            log.debug("No recommender assigned for label {}", label);
+        if (log.isInfoEnabled()) {
+            log.info("No recommender assigned for label {}", label);
          }
     	try {
 			createRecommenderForLabel(label);
