@@ -15,6 +15,7 @@
 
 package org.plista.kornakapi.web.servlets;
 
+import org.apache.mahout.cf.taste.common.TasteException;
 import org.plista.kornakapi.web.MissingParameterException;
 import org.plista.kornakapi.web.Parameters;
 import org.slf4j.Logger;
@@ -64,6 +65,12 @@ public class SetPreferenceServlet extends BaseServlet {
         if (log.isDebugEnabled()) {
             log.debug("No recommender assigned for label {}", label);
          }
+    	try {
+			createRecommenderForLabel(label);
+		} catch (TasteException te) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }   	
       
   }
