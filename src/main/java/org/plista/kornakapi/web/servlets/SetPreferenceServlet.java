@@ -15,6 +15,7 @@
 
 package org.plista.kornakapi.web.servlets;
 
+import org.plista.kornakapi.web.MissingParameterException;
 import org.plista.kornakapi.web.Parameters;
 
 import javax.servlet.ServletException;
@@ -32,7 +33,13 @@ public class SetPreferenceServlet extends BaseServlet {
     long userID = getParameterAsLong(request, Parameters.USER_ID, true);
     long itemID = getParameterAsLong(request, Parameters.ITEM_ID, true);
     float value = getParameterAsFloat(request, Parameters.VALUE, true);
-    String label = getParameter(request, Parameters.LABEL, true);
+    String label = null;
+    try{
+        label = getParameter(request, Parameters.LABEL, true);
+    }catch(MissingParameterException e){
+    	
+    }
+
     if(userID < 0 || userID > 2147483647){
     	userID = this.idRemapping(userID);
     }
