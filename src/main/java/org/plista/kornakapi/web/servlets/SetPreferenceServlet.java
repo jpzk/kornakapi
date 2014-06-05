@@ -40,8 +40,8 @@ public class SetPreferenceServlet extends BaseServlet {
     try{
         label = getParameter(request, Parameters.LABEL, true);
     }catch(MissingParameterException e){
-        if (log.isDebugEnabled()) {
-            log.debug("Fetched label {} from db for item {} ", label, itemID);
+        if (log.isInfoEnabled()) {
+            log.info("Label Parameter is missing");
          }
     }
 
