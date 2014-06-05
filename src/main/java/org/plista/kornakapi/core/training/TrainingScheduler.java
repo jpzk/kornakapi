@@ -37,7 +37,7 @@ public class TrainingScheduler implements Closeable {
   private final Scheduler scheduler;
 
   public TrainingScheduler() throws Exception {
-    ThreadPool threadPool = new SimpleThreadPool(1, Thread.NORM_PRIORITY);
+    ThreadPool threadPool = new SimpleThreadPool(2, Thread.NORM_PRIORITY);
     threadPool.initialize();
 
     DirectSchedulerFactory schedulerFactory = DirectSchedulerFactory.getInstance();
