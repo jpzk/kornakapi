@@ -37,7 +37,7 @@ public class SetPreferenceServlet extends BaseServlet {
     try{
         label = getParameter(request, Parameters.LABEL, true);
     }catch(MissingParameterException e){
-    	
+    	label = null;
     }
 
     if(userID < 0 || userID > 2147483647){
