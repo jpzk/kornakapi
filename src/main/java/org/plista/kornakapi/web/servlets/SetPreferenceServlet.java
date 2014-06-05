@@ -41,8 +41,8 @@ public class SetPreferenceServlet extends BaseServlet {
     try{
         label = getParameter(request, Parameters.LABEL, true);
     }catch(MissingParameterException e){
-        if (log.isInfoEnabled()) {
-            log.info("Label Parameter is missing");
+        if (log.isDebugEnabled()) {
+            log.debug("Label Parameter is missing");
          }
     }
 
