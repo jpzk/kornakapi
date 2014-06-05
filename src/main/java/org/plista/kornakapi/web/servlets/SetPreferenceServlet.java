@@ -51,7 +51,7 @@ public class SetPreferenceServlet extends BaseServlet {
     if(label==null){
     	label = this.getDomainIndependetStorage().getItemsLabel(itemID);
         if (log.isInfoEnabled()) {
-            log.info("Fetched label {} from db for item {} ", label, itemID);
+            log.debug("Fetched label {} from db for item {} ", label, itemID);
          }
     }
     this.getDomainIndependetStorage().setPreference(userID, itemID, value);  
@@ -59,7 +59,7 @@ public class SetPreferenceServlet extends BaseServlet {
     	preferenceChangeListener().notifyOfPreferenceChange(label);
     }catch(NullPointerException e){
         if (log.isInfoEnabled()) {
-            log.info("No recommender assigned for label {}", label);
+            log.debug("No recommender assigned for label {}", label);
          }
     }   	
       
