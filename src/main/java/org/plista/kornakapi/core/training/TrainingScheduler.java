@@ -69,6 +69,7 @@ public class TrainingScheduler implements Closeable {
 	  }
 
   public void addRecommenderTrainingJob(String recommenderName) {
+	  /**
     JobDetail job = JobBuilder.newJob(TrainRecommenderJob.class)
         .withIdentity(key(recommenderName))
         .build();
@@ -80,6 +81,7 @@ public class TrainingScheduler implements Closeable {
     } catch (SchedulerException e) {
       throw new RuntimeException(e);
     }
+    **/
   }
 
   public void addRecommenderTrainingJobWithCronSchedule(String recommenderName, String cronExpression) {
