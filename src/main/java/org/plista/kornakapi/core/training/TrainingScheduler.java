@@ -32,7 +32,7 @@ import org.quartz.simpl.SimpleThreadPool;
 import org.quartz.spi.ThreadPool;
 
 import static org.quartz.TriggerBuilder.*;
-import static org.quartz.DateBuilder.*:
+
 
 import java.io.Closeable;
 import java.io.IOException;
