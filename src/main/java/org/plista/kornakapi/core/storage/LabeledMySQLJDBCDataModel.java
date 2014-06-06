@@ -159,7 +159,7 @@ public class LabeledMySQLJDBCDataModel extends AbstractJDBCDataModel{
 	        "SELECT DISTINCT " + userIDColumn + ", " + itemIDColumn + ", " + preferenceColumn + " FROM " + preferenceTable
 	             + " INNER JOIN " + candidatesTable + " c USING ("+ itemIDColumn + ") WHERE c." +labelColumn +"="+ label + " ORDER BY " + userIDColumn + ", " + itemIDColumn,
 	        // getNumItemsSQL
-	        "SELECT COUNT(DISTINCT " + itemIDColumn + ") FROM " + preferenceTable ,
+	             "SELECT COUNT(DISTINCT " + itemIDColumn + ") FROM " + preferenceTable + " INNER JOIN " + candidatesTable + " c USING ("+ itemIDColumn + ") WHERE c." +labelColumn +"="+ label,
 	        // getNumUsersSQL
 	        "SELECT COUNT(DISTINCT " + userIDColumn + ") FROM " + preferenceTable + " INNER JOIN " + candidatesTable + " c USING ("+ itemIDColumn + ") WHERE c." +labelColumn +"="+ label,
 	        // setPreferenceSQL
