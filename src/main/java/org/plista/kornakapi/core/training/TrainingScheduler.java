@@ -69,7 +69,6 @@ public class TrainingScheduler implements Closeable {
 	  }
 
   public void addRecommenderTrainingJob(String recommenderName) {
-	  /**
     JobDetail job = JobBuilder.newJob(TrainRecommenderJob.class)
         .withIdentity(key(recommenderName))
         .build();
@@ -81,7 +80,7 @@ public class TrainingScheduler implements Closeable {
     } catch (SchedulerException e) {
       throw new RuntimeException(e);
     }
-    **/
+
   }
 
   public void addRecommenderTrainingJobWithCronSchedule(String recommenderName, String cronExpression) {
@@ -104,12 +103,14 @@ public class TrainingScheduler implements Closeable {
 
   public void immediatelyTrainRecommender(String recommenderName) throws SchedulerException {
 	  if(!scheduler.checkExists(triggerkey(recommenderName))){
+		  JobDetail job = scheduler.getJobDetail(key(recommenderName));
 		  Trigger trigger = newTrigger()
 			      .withIdentity(triggerkey(recommenderName))
+			      .forJob(job)
 			      .startNow()           
 			      .build();
-		  JobDetail job = scheduler.getJobDetail(key(recommenderName));
-		  scheduler.scheduleJob(job, trigger);  
+		  
+		  scheduler.scheduleJob(trigger); 
 	  }
   }
 
