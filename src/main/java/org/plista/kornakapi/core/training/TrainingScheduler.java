@@ -22,11 +22,17 @@ import org.quartz.JobDetail;
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
+import org.quartz.SimpleTrigger;
+import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
+import org.quartz.TriggerKey;
 import org.quartz.impl.DirectSchedulerFactory;
 import org.quartz.simpl.RAMJobStore;
 import org.quartz.simpl.SimpleThreadPool;
 import org.quartz.spi.ThreadPool;
+
+import static org.quartz.TriggerBuilder.*;
+import static org.quartz.DateBuilder.*:
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -57,12 +63,17 @@ public class TrainingScheduler implements Closeable {
   private JobKey key(String recommenderName) {
     return new JobKey("train-" + recommenderName);
   }
+  
+  private TriggerKey triggerkey(String recommenderName) {
+	    return new TriggerKey("train-" + recommenderName);
+	  }
 
   public void addRecommenderTrainingJob(String recommenderName) {
     JobDetail job = JobBuilder.newJob(TrainRecommenderJob.class)
         .withIdentity(key(recommenderName))
         .build();
     job.getJobDataMap().put(TrainRecommenderJob.RECOMMENDER_NAME_PARAM, recommenderName);
+    
 
     try {
       scheduler.addJob(job, true);
@@ -90,7 +101,14 @@ public class TrainingScheduler implements Closeable {
   }
 
   public void immediatelyTrainRecommender(String recommenderName) throws SchedulerException {
-      scheduler.triggerJob(key(recommenderName));
+	  if(!scheduler.checkExists(triggerkey(recommenderName))){
+		  Trigger trigger = newTrigger()
+			      .withIdentity(triggerkey(recommenderName))
+			      .startNow()           
+			      .build();
+		  JobDetail job = scheduler.getJobDetail(key(recommenderName));
+		  scheduler.scheduleJob(job, trigger);  
+	  }
   }
 
   @Override
