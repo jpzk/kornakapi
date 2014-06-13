@@ -82,4 +82,26 @@ public class FoldingFactorization {
 
     return userFeatures;
   }
+  
+  public double[] foldInAnonymousUser(long[] itemIDs) throws NoSuchItemException {
+
+	    double[] userFeatures = new double[factorization.numFeatures()];
+	    for (long itemID : itemIDs) {
+	    	try{
+		      int itemIndex = factorization.itemIndex(itemID);
+		      for (int feature = 0; feature < factorization.numFeatures(); feature++) {
+		        userFeatures[feature] += factorization.allItemFeatures()[itemIndex][feature];
+		      }
+	    	}catch(NoSuchItemException e){
+	    	    if (log.isInfoEnabled()) {
+	    	        log.info("Item unknown: {}", itemID);
+	    	        if(itemIDs.length == 1){
+	    	        	throw new NoSuchItemException("At least one item must be known");
+	    	        }
+	    	    }
+	    	}
+	    }
+
+	    return userFeatures;
+  }
 }
