@@ -75,7 +75,7 @@ public class FoldingFactorization {
     	        }
     	    }
     	}
-    	if(itemIndex >0){
+    	if(itemIndex >=0){
     	    for (int feature = 0; feature < factorization.numFeatures(); feature++) {
     	        userFeatures[feature] += userFoldInMatrix[itemIndex][feature];
     	    }
