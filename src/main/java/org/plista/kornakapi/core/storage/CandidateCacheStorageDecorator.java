@@ -125,6 +125,14 @@ public class CandidateCacheStorageDecorator implements Storage {
 	  }
 	  return allLabels;
 	}
+  
+  public String getItemsLabel(Long itemID) throws IOException{
+	  String itemLabel = null;
+	  if(delegate instanceof MySqlStorage){
+		  itemLabel = ((MySqlStorage) delegate).getItemsLabel(itemID);
+	  }
+	  return itemLabel;
+  }
 	  
 
   //TODO ideally other calls with to an equal uncached label should block and wait for a single retrieval
