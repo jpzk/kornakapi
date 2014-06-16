@@ -88,7 +88,7 @@ public class RecommendServlet extends BaseServlet {
         long duration = System.currentTimeMillis() - start;
         
         if (log.isInfoEnabled()) {
-          log.info("{} recommendations for anonymous user in {} ms", recommendedItems.size(), duration);
+          log.info("{} recommendations for anonymous user {} in {} ms", new Object[] {recommendedItems.size(), itemIDs[0], duration});
         }
       } else {
         throw new IllegalStateException("Parameter [" + Parameters.USER_ID + "] or [" + Parameters.ITEM_IDS + "] " +
