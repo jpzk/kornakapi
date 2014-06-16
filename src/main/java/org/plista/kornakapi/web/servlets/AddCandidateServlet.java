@@ -32,6 +32,9 @@ public class AddCandidateServlet extends BaseServlet {
 
     String label = getParameter(request, Parameters.LABEL, true);
     long itemID = getParameterAsLong(request, Parameters.ITEM_ID, true);
+    if(itemID < 0 || itemID > 2147483647){
+    	itemID = this.idRemapping(itemID);
+    }
     
     String recommenderName = getConfiguration().getFactorizationbasedRecommenders().get(0).getName()+"_"+ label;
     if(!containsTrainer(recommenderName)){

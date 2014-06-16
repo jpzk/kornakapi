@@ -77,12 +77,5 @@ public class SetPreferenceServlet extends BaseServlet {
     }   	
       
   }
-  /**
-   * Method maps ids into int range
-   * @param id
-   * @return long
-   */
-  protected long idRemapping(long id){
-	  return Math.abs(id % 2147483647);
-  }
+
 }

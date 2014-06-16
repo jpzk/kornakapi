@@ -80,8 +80,6 @@ public class FoldingFactorization {
     	        userFeatures[feature] += userFoldInMatrix[itemIndex][feature];
     	    }
     	}
-
-
     }
     return userFeatures;
   }

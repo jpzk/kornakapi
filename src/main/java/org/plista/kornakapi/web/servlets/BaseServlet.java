@@ -219,4 +219,13 @@ private void createEmptyFactorization(PersistenceStrategy strategy) throws IOExc
 	    strategy.maybePersist(new Factorization(new FastByIDMap<Integer>(0), new FastByIDMap<Integer>(0),
 	        new double[0][0], new double[0][0]));
 	  }
+/**
+ * Method maps ids into int range
+ * @param id
+ * @return long
+ */
+protected long idRemapping(long id){
+	  return Math.abs(id % 2147483647);
+}
+
 }
