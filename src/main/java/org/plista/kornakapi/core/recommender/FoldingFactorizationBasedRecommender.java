@@ -142,7 +142,7 @@ public final class FoldingFactorizationBasedRecommender extends AbstractRecommen
 
     //TODO what to do here in the non-implicit case? choose a rating?
     PreferenceArray preferences = asPreferences(itemIDs);
-    double[] foldedInUserFeatures = foldingFactorization.foldInAnonymousUser(itemIDs);
+    double[] foldedInUserFeatures = foldingFactorization.foldInUser(itemIDs);
 
     FastIDSet possibleItemIDs = getAllOtherItems(Long.MIN_VALUE, preferences);
 
