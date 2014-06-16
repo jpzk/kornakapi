@@ -16,6 +16,8 @@
 package org.plista.kornakapi.core.recommender;
 
 import org.apache.commons.math.linear.Array2DRowRealMatrix;
+import org.apache.commons.math.linear.ArrayRealVector;
+import org.apache.commons.math.linear.RealVector;
 import org.apache.commons.math.linear.LUDecompositionImpl;
 import org.apache.commons.math.linear.RealMatrix;
 import org.apache.mahout.cf.taste.common.NoSuchItemException;
@@ -102,7 +104,9 @@ public class FoldingFactorization {
 	    	    }
 	    	}
 	    }
+	    RealVector  userFeaturesAsVector = new ArrayRealVector(userFeatures);
+	    RealVector normalised =  userFeaturesAsVector.mapDivide(userFeaturesAsVector.getNorm());
 
-	    return userFeatures;
+	    return normalised.getData();
   }
 }
