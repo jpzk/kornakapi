@@ -120,7 +120,7 @@ public abstract class BaseServlet extends HttpServlet {
     }
   }
   
-  protected MySqlStorage getDomainIndependetStorage(){
+  protected CandidateCacheStorageDecorator getDomainIndependetStorage(){
 	  return getComponents().getDomainIndependetStorage();
   }
 

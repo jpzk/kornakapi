@@ -17,6 +17,7 @@ package org.plista.kornakapi.core.storage;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+
 import org.apache.mahout.cf.taste.impl.common.FastIDSet;
 import org.apache.mahout.cf.taste.model.DataModel;
 import org.apache.mahout.cf.taste.model.Preference;
@@ -26,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.LinkedList;
 
 /**
  * a decorator for a {@link Storage} that caches the underlying candidate sets
@@ -110,6 +112,20 @@ public class CandidateCacheStorageDecorator implements Storage {
     delegate.deleteAllCandidates(label);
     invalidateCache(label);
   }
+  
+  public LinkedList<String> getAllLabels(){
+	  LinkedList<String> allLabels = null;
+	  if(delegate instanceof MySqlStorage){
+		  try {
+			  allLabels = ((MySqlStorage) delegate).getAllLabels();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	  }
+	  return allLabels;
+	}
+	  
 
   //TODO ideally other calls with to an equal uncached label should block and wait for a single retrieval
   @Override

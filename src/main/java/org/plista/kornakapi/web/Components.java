@@ -42,12 +42,12 @@ public class Components {
   private final DelegatingPreferenceChangeListenerForLabel preferenceChangeListener;
   private final LinkedList<String> labels;
   private final BasicDataSource dataSource;
-  private final MySqlStorage domainIndependetStorage;
+  private final CandidateCacheStorageDecorator domainIndependetStorage;
 
   private static Components INSTANCE;
 
   private Components(Configuration conf, HashMap<String,CandidateCacheStorageDecorator> storages, Map<String, KornakapiRecommender> recommenders,
-        Map<String, Trainer> trainers, TrainingScheduler scheduler, DelegatingPreferenceChangeListenerForLabel preferenceChangeListener2, LinkedList<String>labels, BasicDataSource dataSource, MySqlStorage domainIndependetStorage) {
+        Map<String, Trainer> trainers, TrainingScheduler scheduler, DelegatingPreferenceChangeListenerForLabel preferenceChangeListener2, LinkedList<String>labels, BasicDataSource dataSource, CandidateCacheStorageDecorator domainIndependetStorage) {
     this.conf = conf;
     this.storages = storages;
     this.recommenders = recommenders;
@@ -61,7 +61,7 @@ public class Components {
 
   public static synchronized void init(Configuration conf, HashMap<String,CandidateCacheStorageDecorator> storages,
       Map<String, KornakapiRecommender> recommenders, Map<String, Trainer> trainers, TrainingScheduler scheduler,
-      DelegatingPreferenceChangeListenerForLabel preferenceChangeListener2, LinkedList<String> labels, BasicDataSource dataSource, MySqlStorage domainIndependetStorage) {
+      DelegatingPreferenceChangeListenerForLabel preferenceChangeListener2, LinkedList<String> labels, BasicDataSource dataSource, CandidateCacheStorageDecorator domainIndependetStorage) {
     Preconditions.checkState(INSTANCE == null);
     INSTANCE = new Components(conf, storages, recommenders, trainers, scheduler, preferenceChangeListener2, labels, dataSource, domainIndependetStorage);
   }
@@ -94,7 +94,7 @@ public class Components {
   public HashMap<String, CandidateCacheStorageDecorator> storages() {
     return storages;
   }
-  public MySqlStorage getDomainIndependetStorage(){
+  public CandidateCacheStorageDecorator getDomainIndependetStorage(){
 	  return this.domainIndependetStorage;
   }
 
