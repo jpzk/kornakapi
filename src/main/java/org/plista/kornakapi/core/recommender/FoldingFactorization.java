@@ -105,7 +105,7 @@ public class FoldingFactorization {
 	    	}
 	    }
 	    RealVector  userFeaturesAsVector = new ArrayRealVector(userFeatures);
-	    RealVector normalised =  userFeaturesAsVector.mapDivide(userFeaturesAsVector.getNorm());
+	    RealVector normalised =  userFeaturesAsVector.mapDivide(userFeaturesAsVector.getL1Norm());
 
 	    return normalised.getData();
   }
