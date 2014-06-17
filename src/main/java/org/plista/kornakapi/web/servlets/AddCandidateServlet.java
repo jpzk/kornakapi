@@ -45,6 +45,6 @@ public class AddCandidateServlet extends BaseServlet {
 			e.printStackTrace();
 		}
     }
-    this.getDomainIndependetStorage().addCandidate(label, itemID);
+    this.storages().get(label).addCandidate(label, itemID);
   }
 }
