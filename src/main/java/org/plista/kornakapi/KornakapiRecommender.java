@@ -27,4 +27,7 @@ public interface KornakapiRecommender extends Recommender {
 
   public List<RecommendedItem> recommendToAnonymous(long[] itemIDs, int howMany, IDRescorer rescorer)
       throws TasteException;
-}
+
+  public List<RecommendedItem> recommend(long userID, long[] itemIDs, int howMany,
+		IDRescorer rescorer) throws TasteException;
+  }

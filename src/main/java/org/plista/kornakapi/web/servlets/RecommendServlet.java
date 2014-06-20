@@ -72,11 +72,21 @@ public class RecommendServlet extends BaseServlet {
 
       if (hasParameter(request, Parameters.USER_ID)) {
         long userID = getParameterAsLong(request, Parameters.USER_ID, false);
-
-        long start = System.currentTimeMillis();
-        recommendedItems = recommender.recommend(userID, howMany, rescorer);
-        long duration = System.currentTimeMillis() - start;
-        
+        long duration = 0;
+        long[] itemIDs = null;
+        if (hasParameter(request, Parameters.ITEM_IDS)) {
+            itemIDs = getParameterAsLongArray(request, Parameters.ITEM_IDS);
+        }
+        if(itemIDs.length == 1 && itemIDs[0] == 0){       	//if therre are no seen itemids provided
+            long start = System.currentTimeMillis();
+            recommendedItems = recommender.recommend(userID, howMany, rescorer);
+            duration = System.currentTimeMillis() - start;
+        }else{
+            long start = System.currentTimeMillis();
+            recommendedItems = recommender.recommend(userID, itemIDs, howMany, rescorer);
+            duration = System.currentTimeMillis() - start;
+        }
+          
         if (log.isInfoEnabled()) {
           log.info("{} recommendations for user {} in {} ms", new Object[] { recommendedItems.size(), userID, duration });
         }

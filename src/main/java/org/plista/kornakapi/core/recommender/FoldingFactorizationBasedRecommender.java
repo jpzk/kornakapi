@@ -80,16 +80,29 @@ public final class FoldingFactorizationBasedRecommender extends AbstractRecommen
       throw new TasteException("Error reloading factorization", e);
     }
   }
+  
+	@Override
+	public List<RecommendedItem> recommend(long userID, int howMany,
+			IDRescorer rescorer) throws TasteException {
+		
+		long fetchHistoryStart = System.currentTimeMillis();
+		PreferenceArray preferencesFromUser = getDataModel().getPreferencesFromUser(userID);
+		long fetchHistoryDuration = System.currentTimeMillis() - fetchHistoryStart;
+		
+		if (log.isInfoEnabled()) {
+		    	log.info("fetched {} interactions of user {} in {} ms", 
+		    			new Object[] {preferencesFromUser.length(), userID, fetchHistoryDuration} );
+		}
+		return recommend(userID, preferencesFromUser.getIDs(), howMany, rescorer);
+	}
 
   @Override
-  public List<RecommendedItem> recommend(long userID, int howMany, IDRescorer rescorer) throws TasteException {
+  public List<RecommendedItem> recommend(long userID, long[] itemIDs, int howMany, IDRescorer rescorer) throws TasteException {
     Preconditions.checkArgument(howMany >= 1, "howMany must be at least 1");
     log.debug("Recommending items for user ID '{}'", userID);
-
-    long fetchHistoryStart = System.currentTimeMillis();
-    PreferenceArray preferencesFromUser = getDataModel().getPreferencesFromUser(userID);
-    long fetchHistoryDuration = System.currentTimeMillis() - fetchHistoryStart;
-        
+    
+    PreferenceArray preferencesFromUser = asPreferences(itemIDs);
+      
     long fetchItemIDsStart = System.currentTimeMillis();
     FastIDSet possibleItemIDs = getAllOtherItems(userID, preferencesFromUser);
     long fetchItemIDsDuration = System.currentTimeMillis() - fetchItemIDsStart;
@@ -105,8 +118,8 @@ public final class FoldingFactorizationBasedRecommender extends AbstractRecommen
     }
     
     if (log.isInfoEnabled()) {
-    	log.info("fetched {} interactions of user {} in {} ms ({} itemIDs in {} ms, estimation of {} in {} ms)", 
-    			new Object[] { preferencesFromUser.length(), userID, fetchHistoryDuration, possibleItemIDs.size(), fetchItemIDsDuration, numCandidates, estimateDuration });
+    	log.info("fetched {} interactions of user {} ({} itemIDs in {} ms, estimation of {} in {} ms)", 
+    			new Object[] { preferencesFromUser.length(), userID, possibleItemIDs.size(), fetchItemIDsDuration, numCandidates, estimateDuration });
     }
     
     log.debug("Recommendations are: {}", topItems);
@@ -193,4 +206,6 @@ public final class FoldingFactorizationBasedRecommender extends AbstractRecommen
   public void refresh(Collection<Refreshable> alreadyRefreshed) {
     refreshHelper.refresh(alreadyRefreshed);
   }
+
+
 }
