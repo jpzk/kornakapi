@@ -15,11 +15,13 @@
 
 package org.plista.kornakapi.web.servlets;
 
+import org.apache.mahout.cf.taste.common.TasteException;
 import org.plista.kornakapi.web.Parameters;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 
 /** servlet to add items to a candidate set */
@@ -30,7 +32,19 @@ public class AddCandidateServlet extends BaseServlet {
 
     String label = getParameter(request, Parameters.LABEL, true);
     long itemID = getParameterAsLong(request, Parameters.ITEM_ID, true);
-
-    storage().addCandidate(label, itemID);
+    if(itemID < 0 || itemID > 2147483647){
+    	itemID = this.idRemapping(itemID);
+    }
+    
+    String recommenderName = getConfiguration().getFactorizationbasedRecommenders().get(0).getName()+"_"+ label;
+    if(!containsTrainer(recommenderName)){
+    	try {
+			createRecommenderForLabel(label);
+		} catch (TasteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
+    this.storages().get(label).addCandidate(label, itemID);
   }
 }

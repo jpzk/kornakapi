@@ -40,19 +40,20 @@ public class FactorizationbasedInMemoryTrainer extends AbstractTrainer {
   @Override
   protected void doTrain(File targetFile, DataModel inmemoryData, int numProcessors) throws IOException {
     try {
-
-      ALSWRFactorizer factorizer = new ALSWRFactorizer(inmemoryData, conf.getNumberOfFeatures(), conf.getLambda(),
-          conf.getNumberOfIterations(), conf.isUsesImplicitFeedback(), conf.getAlpha(), numProcessors);
-      
-      long start = System.currentTimeMillis();
-      Factorization factorization = factorizer.factorize();
-      long estimateDuration = System.currentTimeMillis() - start;
-      
-      if (log.isInfoEnabled()) {
-    	  log.info("Model trained in {} ms", estimateDuration);
-      }
-
-      new FilePersistenceStrategy(targetFile).maybePersist(factorization);
+    	if(inmemoryData.getNumItems() >= 5 && inmemoryData.getNumUsers() >= 10){//preventing matrix singularity
+	      ALSWRFactorizer factorizer = new ALSWRFactorizer(inmemoryData, conf.getNumberOfFeatures(), conf.getLambda(),
+	          conf.getNumberOfIterations(), conf.isUsesImplicitFeedback(), conf.getAlpha(), numProcessors);
+	      
+	      long start = System.currentTimeMillis();
+	      Factorization factorization = factorizer.factorize();
+	      long estimateDuration = System.currentTimeMillis() - start;
+	      
+	      if (log.isInfoEnabled()) {
+	    	  log.info("Model trained in {} ms", estimateDuration);
+	      }
+	
+	      new FilePersistenceStrategy(targetFile).maybePersist(factorization);
+    	}
 
     } catch (Exception e) {
       throw new IOException(e);

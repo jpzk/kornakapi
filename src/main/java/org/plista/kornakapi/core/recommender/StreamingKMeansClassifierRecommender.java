@@ -109,4 +109,12 @@ public class StreamingKMeansClassifierRecommender implements KornakapiRecommende
 		}
 		return result;
 	}
+
+
+	@Override
+	public List<RecommendedItem> recommend(long userID, long[] itemIDs,
+			int howMany, IDRescorer rescorer) throws TasteException {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

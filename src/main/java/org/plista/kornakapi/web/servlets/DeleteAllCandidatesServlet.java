@@ -15,7 +15,7 @@ public class DeleteAllCandidatesServlet extends BaseServlet {
 
     String label = getParameter(request, Parameters.LABEL, true);
 
-    storage().deleteAllCandidates(label);
+    this.getDomainIndependetStorage().deleteAllCandidates(label);
   }
 
 }

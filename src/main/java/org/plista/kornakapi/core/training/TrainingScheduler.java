@@ -22,11 +22,17 @@ import org.quartz.JobDetail;
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
+import org.quartz.SimpleTrigger;
+import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
+import org.quartz.TriggerKey;
 import org.quartz.impl.DirectSchedulerFactory;
 import org.quartz.simpl.RAMJobStore;
 import org.quartz.simpl.SimpleThreadPool;
 import org.quartz.spi.ThreadPool;
+
+import static org.quartz.TriggerBuilder.*;
+
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -37,7 +43,7 @@ public class TrainingScheduler implements Closeable {
   private final Scheduler scheduler;
 
   public TrainingScheduler() throws Exception {
-    ThreadPool threadPool = new SimpleThreadPool(1, Thread.NORM_PRIORITY);
+    ThreadPool threadPool = new SimpleThreadPool(2, Thread.NORM_PRIORITY);
     threadPool.initialize();
 
     DirectSchedulerFactory schedulerFactory = DirectSchedulerFactory.getInstance();
@@ -57,18 +63,24 @@ public class TrainingScheduler implements Closeable {
   private JobKey key(String recommenderName) {
     return new JobKey("train-" + recommenderName);
   }
+  
+  private TriggerKey triggerkey(String recommenderName) {
+	    return new TriggerKey("train-" + recommenderName);
+	  }
 
   public void addRecommenderTrainingJob(String recommenderName) {
     JobDetail job = JobBuilder.newJob(TrainRecommenderJob.class)
         .withIdentity(key(recommenderName))
         .build();
     job.getJobDataMap().put(TrainRecommenderJob.RECOMMENDER_NAME_PARAM, recommenderName);
+    
 
     try {
       scheduler.addJob(job, true);
     } catch (SchedulerException e) {
       throw new RuntimeException(e);
     }
+
   }
 
   public void addRecommenderTrainingJobWithCronSchedule(String recommenderName, String cronExpression) {
@@ -89,12 +101,17 @@ public class TrainingScheduler implements Closeable {
     }
   }
 
-  public void immediatelyTrainRecommender(String recommenderName) {
-    try {
-      scheduler.triggerJob(key(recommenderName));
-    } catch (SchedulerException e) {
-      throw new RuntimeException(e);
-    }
+  public void immediatelyTrainRecommender(String recommenderName) throws SchedulerException {
+	  if(!scheduler.checkExists(triggerkey(recommenderName))){
+		  JobDetail job = scheduler.getJobDetail(key(recommenderName));
+		  Trigger trigger = newTrigger()
+			      .withIdentity(triggerkey(recommenderName))
+			      .forJob(job)
+			      .startNow()           
+			      .build();
+		  
+		  scheduler.scheduleJob(trigger); 
+	  }
   }
 
   @Override

@@ -16,6 +16,7 @@
 package org.plista.kornakapi.core.storage;
 
 
+import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.mahout.cf.taste.model.Preference;
 import org.apache.mahout.common.IOUtils;
 import org.plista.kornakapi.core.config.StorageConfiguration;
@@ -36,14 +37,15 @@ public class MySqlMaxPersistentStorage extends MySqlStorage implements Storage {
   private static final String IMPORT_QUERY_MAX =
 	      "INSERT INTO taste_preferences (user_id, item_id, preference) VALUES (?, ?, ?) " +
 	      "ON DUPLICATE KEY UPDATE preference = GREATEST(preference, VALUES(preference))";
+
  
   private static final Logger log = LoggerFactory.getLogger(MySqlStorage.class);
    
-  public MySqlMaxPersistentStorage(StorageConfiguration storageConf) {
-	super(storageConf);
+  public MySqlMaxPersistentStorage(StorageConfiguration storageConf, String label,BasicDataSource dataSource) {
+	super(storageConf, label, dataSource);
 
   }
-
+ 
   @Override
   public void setPreference(long userID, long itemID, float value) throws IOException {
 	  Connection conn = null;
@@ -62,6 +64,7 @@ public class MySqlMaxPersistentStorage extends MySqlStorage implements Storage {
 	      IOUtils.quietClose(conn);
 	    }
   }
+
 
   @Override
   public void batchSetPreferences(Iterator<Preference> preferences, int batchSize) throws IOException {

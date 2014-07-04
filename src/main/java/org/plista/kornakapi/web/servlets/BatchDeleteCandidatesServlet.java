@@ -16,6 +16,7 @@
 package org.plista.kornakapi.web.servlets;
 
 import com.google.common.io.Closeables;
+
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
@@ -28,6 +29,7 @@ import org.plista.kornakapi.web.Parameters;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
@@ -46,8 +48,7 @@ public class BatchDeleteCandidatesServlet extends BaseServlet {
 
     boolean fileProcessed = false;
 
-    Storage storage = storage();
-
+    Storage storage = this.getDomainIndependetStorage();
     try {
       fileItems = upload.getItemIterator(request);
       while (fileItems.hasNext()) {

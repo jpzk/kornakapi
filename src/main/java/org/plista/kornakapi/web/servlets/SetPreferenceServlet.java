@@ -15,39 +15,67 @@
 
 package org.plista.kornakapi.web.servlets;
 
+import org.apache.mahout.cf.taste.common.TasteException;
+import org.plista.kornakapi.web.MissingParameterException;
 import org.plista.kornakapi.web.Parameters;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 
 /** servlet to add preferences */
 public class SetPreferenceServlet extends BaseServlet {
 
+  private static final Logger log = LoggerFactory.getLogger(SetPreferenceServlet.class);
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
     long userID = getParameterAsLong(request, Parameters.USER_ID, true);
     long itemID = getParameterAsLong(request, Parameters.ITEM_ID, true);
     float value = getParameterAsFloat(request, Parameters.VALUE, true);
+    String label = null;
+    try{
+        label = getParameter(request, Parameters.LABEL, true);
+    }catch(MissingParameterException e){
+        if (log.isDebugEnabled()) {
+            log.debug("Label Parameter is missing");
+         }
+    }
+
     if(userID < 0 || userID > 2147483647){
     	userID = this.idRemapping(userID);
     }
     if(itemID < 0 || itemID > 2147483647){
     	itemID = this.idRemapping(itemID);
     }
-   
+    if(label==null){
+    	label = this.getDomainIndependetStorage().getItemsLabel(itemID);
+        if (log.isDebugEnabled()) {
+            log.debug("Fetched label {} from db for item {} ", label, itemID);
+         }
+    }
+    this.getDomainIndependetStorage().setPreference(userID, itemID, value);  
+    try{
+    	preferenceChangeListener().notifyOfPreferenceChange(label);
+    }catch(NullPointerException e){
+        if (log.isInfoEnabled() && label!= null) {
+            log.info("No recommender assigned for label {}", label);
+         }
+        if(label != null){
+        	try {
+    			createRecommenderForLabel(label);
+    		} catch (TasteException te) {
+    			// TODO Auto-generated catch block
+    			e.printStackTrace();
+    		}
+        }
 
-    storage().setPreference(userID, itemID, value);
-    preferenceChangeListener().notifyOfPreferenceChange();
+    }   	
+      
   }
-  /**
-   * Method maps ids into int range
-   * @param id
-   * @return long
-   */
-  protected long idRemapping(long id){
-	  return Math.abs(id % 2147483647);
-  }
+
 }

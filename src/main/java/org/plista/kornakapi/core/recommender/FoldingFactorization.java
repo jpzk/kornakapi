@@ -16,6 +16,8 @@
 package org.plista.kornakapi.core.recommender;
 
 import org.apache.commons.math.linear.Array2DRowRealMatrix;
+import org.apache.commons.math.linear.ArrayRealVector;
+import org.apache.commons.math.linear.RealVector;
 import org.apache.commons.math.linear.LUDecompositionImpl;
 import org.apache.commons.math.linear.RealMatrix;
 import org.apache.mahout.cf.taste.common.NoSuchItemException;
@@ -64,11 +66,9 @@ public class FoldingFactorization {
 
     double[] userFeatures = new double[factorization.numFeatures()];
     for (long itemID : itemIDs) {
+    	int itemIndex = -1;
     	try{
-	      int itemIndex = factorization.itemIndex(itemID);
-	      for (int feature = 0; feature < factorization.numFeatures(); feature++) {
-	        userFeatures[feature] += userFoldInMatrix[itemIndex][feature];
-	      }
+	      itemIndex = factorization.itemIndex(itemID);
     	}catch(NoSuchItemException e){
     	    if (log.isInfoEnabled()) {
     	        log.info("Item unknown: {}", itemID);
@@ -77,9 +77,36 @@ public class FoldingFactorization {
     	        }
     	    }
     	}
+    	if(itemIndex >=0){
+    	    for (int feature = 0; feature < factorization.numFeatures(); feature++) {
+    	        userFeatures[feature] += userFoldInMatrix[itemIndex][feature];
+    	    }
+    	}
     }
-    
-
     return userFeatures;
+  }
+  
+  public double[] foldInAnonymousUser(long[] itemIDs) throws NoSuchItemException {
+
+	    double[] userFeatures = new double[factorization.numFeatures()];
+	    for (long itemID : itemIDs) {
+	    	try{
+		      int itemIndex = factorization.itemIndex(itemID);
+		      for (int feature = 0; feature < factorization.numFeatures(); feature++) {
+		        userFeatures[feature] += factorization.allItemFeatures()[itemIndex][feature];
+		      }
+	    	}catch(NoSuchItemException e){
+	    	    if (log.isInfoEnabled()) {
+	    	        log.info("Item unknown: {}", itemID);
+	    	        if(itemIDs.length == 1){
+	    	        	throw new NoSuchItemException("At least one item must be known");
+	    	        }
+	    	    }
+	    	}
+	    }
+	    RealVector  userFeaturesAsVector = new ArrayRealVector(userFeatures);
+	    RealVector normalised =  userFeaturesAsVector.mapDivide(userFeaturesAsVector.getL1Norm());
+
+	    return normalised.getData();
   }
 }

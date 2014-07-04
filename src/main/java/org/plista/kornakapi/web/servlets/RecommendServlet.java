@@ -43,16 +43,27 @@ public class RecommendServlet extends BaseServlet {
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-    String recommenderName = getParameter(request, Parameters.RECOMMENDER, true);
+
     int howMany = getParameterAsInt(request, Parameters.HOW_MANY, Parameters.DEFAULT_HOW_MANY);
 
     IDRescorer rescorer = null;
 
-    if (hasParameter(request, Parameters.LABEL)) {
-      String label = getParameter(request, Parameters.LABEL, false);
-      FastIDSet candidates = storage().getCandidates(label);
-      rescorer = new FixedCandidatesIDRescorer(candidates);
+	String label = getParameter(request, Parameters.LABEL, false);
+	String recommenderName = getParameter(request, Parameters.RECOMMENDER, true) + "_" + label;
+    if(!containsTrainer(recommenderName)){
+        if (log.isInfoEnabled()) {
+            log.info("No recommender assigned for label {}", label);
+         }
+    	try {
+			createRecommenderForLabel(label);
+		} catch (TasteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
+	FastIDSet candidates = storages().get(label).getCandidates(label);
+	rescorer = new FixedCandidatesIDRescorer(candidates);
+    
 
     KornakapiRecommender recommender = recommender(recommenderName);
 
@@ -61,11 +72,21 @@ public class RecommendServlet extends BaseServlet {
 
       if (hasParameter(request, Parameters.USER_ID)) {
         long userID = getParameterAsLong(request, Parameters.USER_ID, false);
-
-        long start = System.currentTimeMillis();
-        recommendedItems = recommender.recommend(userID, howMany, rescorer);
-        long duration = System.currentTimeMillis() - start;
-        
+        long duration = 0;
+        long[] itemIDs = null;
+        if (hasParameter(request, Parameters.ITEM_IDS)) {
+            itemIDs = getParameterAsLongArray(request, Parameters.ITEM_IDS);
+        }
+        if(itemIDs == null || (itemIDs.length == 1 && itemIDs[0] == 0)){       	//if there are no seen itemids provided
+            long start = System.currentTimeMillis();
+            recommendedItems = recommender.recommend(userID, howMany, rescorer);
+            duration = System.currentTimeMillis() - start;
+        }else{
+            long start = System.currentTimeMillis();
+            recommendedItems = recommender.recommend(userID, itemIDs, howMany, rescorer);
+            duration = System.currentTimeMillis() - start;
+        }
+          
         if (log.isInfoEnabled()) {
           log.info("{} recommendations for user {} in {} ms", new Object[] { recommendedItems.size(), userID, duration });
         }
@@ -77,7 +98,7 @@ public class RecommendServlet extends BaseServlet {
         long duration = System.currentTimeMillis() - start;
         
         if (log.isInfoEnabled()) {
-          log.info("{} recommendations for anonymous user in {} ms", recommendedItems.size(), duration);
+          log.info("{} recommendations for anonymous user {} in {} ms", new Object[] {recommendedItems.size(), itemIDs[0], duration});
         }
       } else {
         throw new IllegalStateException("Parameter [" + Parameters.USER_ID + "] or [" + Parameters.ITEM_IDS + "] " +

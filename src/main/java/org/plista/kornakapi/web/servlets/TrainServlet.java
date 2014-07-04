@@ -15,21 +15,39 @@
 
 package org.plista.kornakapi.web.servlets;
 
+import org.apache.mahout.cf.taste.common.TasteException;
+
 import org.plista.kornakapi.web.Parameters;
+import org.quartz.SchedulerException;
+
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
+
 
 /** servlet to manually trigger the training for a recommender */
 public class TrainServlet extends BaseServlet {
-
+	
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-    String recommender = getParameter(request, Parameters.RECOMMENDER, true);
-
-    scheduler().immediatelyTrainRecommender(recommender);
+	String label = getParameter(request, Parameters.LABEL, true);
+    String recommenderName = getParameter(request, Parameters.RECOMMENDER, true)+"_"+ label;
+    if(!containsTrainer(recommenderName)){
+    	try {
+			createRecommenderForLabel(label);
+		} catch (TasteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
+	try {
+		scheduler().immediatelyTrainRecommender(recommenderName);
+	} catch (SchedulerException e) {
+		e.printStackTrace();
+	}
   }
 }

@@ -16,7 +16,9 @@
 package org.plista.kornakapi.core.training.preferencechanges;
 
 import com.google.common.base.Preconditions;
+
 import org.plista.kornakapi.core.training.TrainingScheduler;
+import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +50,12 @@ public class InMemoryPreferenceChangeListener implements PreferenceChangeListene
         log.info("Retraining recommender {} after {} preference changes", recommenderName, changes);
       }
 
-      scheduler.immediatelyTrainRecommender(recommenderName);
+      try {
+		scheduler.immediatelyTrainRecommender(recommenderName);
+	} catch (SchedulerException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
     }
   }
 }

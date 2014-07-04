@@ -45,4 +45,11 @@ public class ItemSimilarityBasedRecommender extends GenericItemBasedRecommender 
 
     return mostSimilarItems(itemIDs, howMany, rescorer, false);
   }
+
+@Override
+public List<RecommendedItem> recommend(long userID, long[] itemIDs,
+		int howMany, IDRescorer rescorer) throws TasteException {
+	// TODO Auto-generated method stub
+	return null;
+}
 }
