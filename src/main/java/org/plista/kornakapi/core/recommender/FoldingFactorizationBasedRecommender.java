@@ -89,8 +89,8 @@ public final class FoldingFactorizationBasedRecommender extends AbstractRecommen
 		PreferenceArray preferencesFromUser = getDataModel().getPreferencesFromUser(userID);
 		long fetchHistoryDuration = System.currentTimeMillis() - fetchHistoryStart;
 		
-		if (log.isInfoEnabled()) {
-		    	log.info("fetched {} interactions of user {} in {} ms", 
+		if (log.isDebugEnabled()) {
+		    	log.debug("fetched {} interactions of user {} in {} ms", 
 		    			new Object[] {preferencesFromUser.length(), userID, fetchHistoryDuration} );
 		}
 		return recommend(userID, preferencesFromUser.getIDs(), howMany, rescorer);
@@ -117,8 +117,8 @@ public final class FoldingFactorizationBasedRecommender extends AbstractRecommen
     	numCandidates = ((FixedCandidatesIDRescorer) rescorer).numCandidates();
     }
     
-    if (log.isInfoEnabled()) {
-    	log.info("fetched {} interactions of user {} ({} itemIDs in {} ms, estimation of {} in {} ms)", 
+    if (log.isDebugEnabled()) {
+    	log.debug("fetched {} interactions of user {} ({} itemIDs in {} ms, estimation of {} in {} ms)", 
     			new Object[] { preferencesFromUser.length(), userID, possibleItemIDs.size(), fetchItemIDsDuration, numCandidates, estimateDuration });
     }
     

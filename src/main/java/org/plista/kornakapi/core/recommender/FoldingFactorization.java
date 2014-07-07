@@ -70,8 +70,8 @@ public class FoldingFactorization {
     	try{
 	      itemIndex = factorization.itemIndex(itemID);
     	}catch(NoSuchItemException e){
-    	    if (log.isInfoEnabled()) {
-    	        log.info("Item unknown: {}", itemID);
+    	    if (log.isDebugEnabled()) {
+    	        log.debug("Item unknown: {}", itemID);
     	        if(itemIDs.length == 1){
     	        	throw new NoSuchItemException("At least one item must be known");
     	        }
@@ -96,8 +96,8 @@ public class FoldingFactorization {
 		        userFeatures[feature] += factorization.allItemFeatures()[itemIndex][feature];
 		      }
 	    	}catch(NoSuchItemException e){
-	    	    if (log.isInfoEnabled()) {
-	    	        log.info("Item unknown: {}", itemID);
+	    	    if (log.isDebugEnabled()) {
+	    	        log.debug("Item unknown: {}", itemID);
 	    	        if(itemIDs.length == 1){
 	    	        	throw new NoSuchItemException("At least one item must be known");
 	    	        }
