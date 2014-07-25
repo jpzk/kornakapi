@@ -136,7 +136,15 @@ public final class FoldingFactorizationBasedRecommender extends AbstractRecommen
   }
 
   private float estimatePreferenceForAnonymous(double[] foldedInUserFeatures, long itemID) throws NoSuchItemException {
-    double[] itemFeatures = foldingFactorization.factorization().getItemFeatures(itemID);
+	  double[] itemFeatures = foldingFactorization.factorization().getItemFeatures(itemID);
+	  double fnorm = 0;
+	  for (int feature = 0; feature < itemFeatures.length; feature++) {
+		  fnorm += itemFeatures[feature] *itemFeatures[feature];
+	  }
+	  for (int feature = 0; feature < itemFeatures.length; feature++) {
+		  itemFeatures[feature] = itemFeatures[feature] / fnorm;
+	  }
+    
 
     return (float) dotProduct(foldedInUserFeatures, itemFeatures);
   }
