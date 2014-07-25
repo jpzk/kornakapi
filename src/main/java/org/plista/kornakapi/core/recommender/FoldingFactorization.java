@@ -92,8 +92,13 @@ public class FoldingFactorization {
 	    for (long itemID : itemIDs) {
 	    	try{
 		      int itemIndex = factorization.itemIndex(itemID);
+		      double fnorm = 0;
 		      for (int feature = 0; feature < factorization.numFeatures(); feature++) {
-		        userFeatures[feature] += factorization.allItemFeatures()[itemIndex][feature];
+		    	  fnorm += factorization.allItemFeatures()[itemIndex][feature] * factorization.allItemFeatures()[itemIndex][feature];
+		      }
+		      fnorm = Math.sqrt(fnorm);
+		      for (int feature = 0; feature < factorization.numFeatures(); feature++) {
+		        userFeatures[feature] += factorization.allItemFeatures()[itemIndex][feature]/fnorm;
 		      }
 	    	}catch(NoSuchItemException e){
 	    	    if (log.isDebugEnabled()) {
