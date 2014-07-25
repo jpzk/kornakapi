@@ -141,6 +141,7 @@ public final class FoldingFactorizationBasedRecommender extends AbstractRecommen
 	  for (int feature = 0; feature < itemFeatures.length; feature++) {
 		  fnorm += itemFeatures[feature] *itemFeatures[feature];
 	  }
+	  fnorm = Math.sqrt(fnorm);
 	  for (int feature = 0; feature < itemFeatures.length; feature++) {
 		  itemFeatures[feature] = itemFeatures[feature] / fnorm;
 	  }
