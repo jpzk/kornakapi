@@ -16,9 +16,10 @@
 package org.plista.kornakapi.core.training.preferencechanges;
 
 import com.google.common.base.Preconditions;
-
-import org.plista.kornakapi.core.training.TrainingScheduler;
 import org.quartz.SchedulerException;
+
+import org.plista.kornakapi.core.training.TaskScheduler;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,14 +28,14 @@ import java.util.concurrent.atomic.AtomicLong;
 /**  a simple, transient {@link PreferenceChangeListener} */
 public class InMemoryPreferenceChangeListener implements PreferenceChangeListener{
 
-  private final TrainingScheduler scheduler;
+  private final TaskScheduler scheduler;
   private final String recommenderName;
   private final int retrainCount;
   private final AtomicLong numberOfChanges = new AtomicLong(0);
 
   private static final Logger log = LoggerFactory.getLogger(InMemoryPreferenceChangeListener.class);
 
-  public InMemoryPreferenceChangeListener(TrainingScheduler scheduler, String recommenderName, int retrainCount) {
+  public InMemoryPreferenceChangeListener(TaskScheduler scheduler, String recommenderName, int retrainCount) {
     Preconditions.checkArgument(retrainCount > 0);
     this.scheduler = scheduler;
     this.recommenderName = recommenderName;
@@ -49,7 +50,6 @@ public class InMemoryPreferenceChangeListener implements PreferenceChangeListene
       if (log.isInfoEnabled()) {
         log.info("Retraining recommender {} after {} preference changes", recommenderName, changes);
       }
-
       try {
 		scheduler.immediatelyTrainRecommender(recommenderName);
 	} catch (SchedulerException e) {

@@ -48,8 +48,8 @@ import org.plista.kornakapi.core.storage.MySqlStorage;
 import org.plista.kornakapi.core.training.FactorizationbasedInMemoryTrainer;
 import org.plista.kornakapi.core.training.MultithreadedItembasedInMemoryTrainer;
 import org.plista.kornakapi.core.training.StreamingKMeansClustererTrainer;
+import org.plista.kornakapi.core.training.TaskScheduler;
 import org.plista.kornakapi.core.training.Trainer;
-import org.plista.kornakapi.core.training.TrainingScheduler;
 import org.plista.kornakapi.core.training.preferencechanges.DelegatingPreferenceChangeListener;
 import org.plista.kornakapi.core.training.preferencechanges.DelegatingPreferenceChangeListenerForLabel;
 import org.plista.kornakapi.core.training.preferencechanges.InMemoryPreferenceChangeListener;
@@ -93,7 +93,6 @@ public class BigBangServletContextListener implements ServletContextListener {
       CandidateCacheStorageDecorator domainIndependetStorage = null;
       LinkedList<String> labels = null;
 
-      
       dataSource = new BasicDataSource();
       HashMap<String, CandidateCacheStorageDecorator> storages = new HashMap<String, CandidateCacheStorageDecorator>();
       if(conf.getMaxPersistence()){
@@ -109,6 +108,7 @@ public class BigBangServletContextListener implements ServletContextListener {
     		  storages.put(label,  new CandidateCacheStorageDecorator(new MySqlStorage(conf.getStorageConfiguration(), label,dataSource)));
     	  }
       }
+
       
 	  HashMap<String, DataModel> persitentDatas = new HashMap<String, DataModel>();
 	  for(String label: labels){
@@ -116,12 +116,20 @@ public class BigBangServletContextListener implements ServletContextListener {
 	  }
 
 
+      TaskScheduler scheduler = new TaskScheduler();
+
+      String purgePreferencesCronExpression = conf.getStorageConfiguration().getPurgePreferencesCronExpression();
+
+      scheduler.setPurgeOldPreferences(purgePreferencesCronExpression);
+
+
+
       Map<String, KornakapiRecommender> recommenders = Maps.newHashMap();
       Map<String, Trainer> trainers = Maps.newHashMap();
 
-      TrainingScheduler scheduler = new TrainingScheduler();
       DelegatingPreferenceChangeListenerForLabel preferenceChangeListener = new DelegatingPreferenceChangeListenerForLabel();
       log.info("Setup itemBasedRecommders");
+
       for (ItembasedRecommenderConfig itembasedConf : conf.getItembasedRecommenders()) {
     	for(String label: labels){
     	       String name = itembasedConf.getName() +"_"+ label;
@@ -218,7 +226,8 @@ public class BigBangServletContextListener implements ServletContextListener {
     	            new CachingAllUnknownItemsCandidateItemsStrategy(persitentDatas.get(label));
 
     	        FoldingFactorizationBasedRecommender svdRecommender = new FoldingFactorizationBasedRecommender(persitentDatas.get(label),
-    	            allUnknownItemsStrategy, persistence);
+    	            allUnknownItemsStrategy, persistence, factorizationbasedConf.getNumberOfThreadsForEstimation());
+
 
     	        recommenders.put(name, svdRecommender);
     	        trainers.put(name, new FactorizationbasedInMemoryTrainer(factorizationbasedConf));

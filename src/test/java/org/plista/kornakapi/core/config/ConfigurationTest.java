@@ -40,6 +40,8 @@ public class ConfigurationTest {
         "    <jdbcUrl>jdbc:mysql://localhost/plista</jdbcUrl>\n" +
         "    <username>root</username>\n" +
         "    <password>secret</password>\n" +
+        "    <purgePreferencesCronExpression>0 3,15 * * *</purgePreferencesCronExpression>\n" +
+        "    <purgePreferencesOlderThanHours>12</purgePreferencesOlderThanHours>\n" +
         "  </storageConfiguration>\n" +
 
         "  <itembasedRecommenders>\n" +
@@ -57,6 +59,7 @@ public class ConfigurationTest {
         "      <usesImplicitFeedback>true</usesImplicitFeedback>\n" +
         "      <numberOfFeatures>10</numberOfFeatures>\n" +
         "      <numberOfIterations>10</numberOfIterations>\n" +
+        "      <numberOfThreadsForEstimation>4</numberOfThreadsForEstimation>\n" +
         "      <lambda>0.01</lambda>\n" +
         "      <alpha>40.0</alpha>\n" +
         "      <retrainAfterPreferenceChanges>5</retrainAfterPreferenceChanges>\n" +
@@ -76,6 +79,8 @@ public class ConfigurationTest {
     assertEquals("jdbc:mysql://localhost/plista", storageConf.getJdbcUrl());
     assertEquals("root", storageConf.getUsername());
     assertEquals("secret", storageConf.getPassword());
+    assertEquals("0 3,15 * * *", storageConf.getPurgePreferencesCronExpression());
+    assertEquals(12, storageConf.getPurgePreferencesOlderThanHours());
 
     List<ItembasedRecommenderConfig> itembasedRecommenders = conf.getItembasedRecommenders();
     assertNotNull(itembasedRecommenders);
@@ -98,6 +103,7 @@ public class ConfigurationTest {
     assertTrue(factorizationbasedRecommenderConf.isUsesImplicitFeedback());
     assertEquals(10, factorizationbasedRecommenderConf.getNumberOfFeatures());
     assertEquals(10, factorizationbasedRecommenderConf.getNumberOfIterations());
+    assertEquals(4, factorizationbasedRecommenderConf.getNumberOfThreadsForEstimation());
     assertEquals(0.01, factorizationbasedRecommenderConf.getLambda(), 0);
     assertEquals(40, factorizationbasedRecommenderConf.getAlpha(), 0);
     assertEquals(5, factorizationbasedRecommenderConf.getRetrainAfterPreferenceChanges());

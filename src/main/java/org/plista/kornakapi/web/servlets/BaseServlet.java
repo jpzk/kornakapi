@@ -24,6 +24,7 @@ import org.apache.mahout.cf.taste.impl.recommender.svd.PersistenceStrategy;
 import org.apache.mahout.cf.taste.model.DataModel;
 import org.apache.mahout.cf.taste.recommender.CandidateItemsStrategy;
 import org.plista.kornakapi.KornakapiRecommender;
+
 import org.plista.kornakapi.core.recommender.CachingAllUnknownItemsCandidateItemsStrategy;
 import org.plista.kornakapi.core.recommender.FoldingFactorizationBasedRecommender;
 import org.plista.kornakapi.core.storage.CandidateCacheStorageDecorator;
@@ -31,9 +32,11 @@ import org.plista.kornakapi.core.storage.MySqlMaxPersistentStorage;
 import org.plista.kornakapi.core.storage.MySqlStorage;
 import org.plista.kornakapi.core.training.FactorizationbasedInMemoryTrainer;
 import org.plista.kornakapi.core.training.Trainer;
-import org.plista.kornakapi.core.training.TrainingScheduler;
 import org.plista.kornakapi.core.training.preferencechanges.DelegatingPreferenceChangeListenerForLabel;
 import org.plista.kornakapi.core.training.preferencechanges.InMemoryPreferenceChangeListener;
+import org.plista.kornakapi.core.storage.Storage;
+import org.plista.kornakapi.core.training.TaskScheduler;
+import org.plista.kornakapi.core.training.preferencechanges.PreferenceChangeListener;
 import org.plista.kornakapi.web.Components;
 import org.plista.kornakapi.core.config.Configuration;
 import org.plista.kornakapi.core.config.FactorizationbasedRecommenderConfig;
@@ -78,13 +81,15 @@ public abstract class BaseServlet extends HttpServlet {
   protected KornakapiRecommender recommender(String name) {
     return getComponents().recommender(name);
   }
+
   protected void setTrainer(String name, Trainer trainer){
 	 getComponents().setTrainer(name, trainer);
   }
   protected boolean containsTrainer(String name){
 	  return getComponents().trainer(name) != null;
   }
-  protected TrainingScheduler scheduler() {
+
+  protected TaskScheduler scheduler() {
     return getComponents().scheduler();
   }
 
@@ -187,7 +192,7 @@ public abstract class BaseServlet extends HttpServlet {
           new CachingAllUnknownItemsCandidateItemsStrategy(persistenData);
 
       FoldingFactorizationBasedRecommender svdRecommender = new FoldingFactorizationBasedRecommender(persistenData,
-          allUnknownItemsStrategy, persistence);
+          allUnknownItemsStrategy, persistence, conf.getFactorizationbasedRecommenders().get(0).getNumberOfThreadsForEstimation());
 
       setRecommender(name, svdRecommender);
       setTrainer(name, new FactorizationbasedInMemoryTrainer(factorizationbasedConf));

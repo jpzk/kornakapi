@@ -21,8 +21,17 @@ public class FactorizationbasedRecommenderConfig extends RecommenderConfig {
   private boolean usesImplicitFeedback;
   private int numberOfFeatures;
   private int numberOfIterations;
+  private int numberOfThreadsForEstimation;
   private double lambda;
   private double alpha;
+
+  public int getNumberOfThreadsForEstimation() {
+    return numberOfThreadsForEstimation;
+  }
+
+  public void setNumberOfThreadsForEstimation(int numberOfThreadsForEstimation) {
+    this.numberOfThreadsForEstimation = numberOfThreadsForEstimation;
+  }
 
   public boolean isUsesImplicitFeedback() {
     return usesImplicitFeedback;

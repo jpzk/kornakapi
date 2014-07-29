@@ -16,15 +16,19 @@
 package org.plista.kornakapi.web;
 
 import com.google.common.base.Preconditions;
-
 import org.apache.commons.dbcp.BasicDataSource;
 import org.plista.kornakapi.KornakapiRecommender;
 import org.plista.kornakapi.core.config.Configuration;
 import org.plista.kornakapi.core.storage.CandidateCacheStorageDecorator;
 import org.plista.kornakapi.core.storage.MySqlStorage;
 import org.plista.kornakapi.core.training.Trainer;
-import org.plista.kornakapi.core.training.TrainingScheduler;
 import org.plista.kornakapi.core.training.preferencechanges.DelegatingPreferenceChangeListenerForLabel;
+import org.plista.kornakapi.KornakapiRecommender;
+import org.plista.kornakapi.core.config.Configuration;
+import org.plista.kornakapi.core.storage.Storage;
+import org.plista.kornakapi.core.training.TaskScheduler;
+import org.plista.kornakapi.core.training.Trainer;
+import org.plista.kornakapi.core.training.preferencechanges.PreferenceChangeListener;
 
 
 import java.util.HashMap;
@@ -38,30 +42,34 @@ public class Components {
   private final HashMap<String, CandidateCacheStorageDecorator> storages;
   private final Map<String, KornakapiRecommender> recommenders;
   private final Map<String, Trainer> trainers;
-  private final TrainingScheduler scheduler;
+
   private final DelegatingPreferenceChangeListenerForLabel preferenceChangeListener;
   private final LinkedList<String> labels;
   private final BasicDataSource dataSource;
   private final CandidateCacheStorageDecorator domainIndependetStorage;
+  private final TaskScheduler scheduler;
 
   private static Components INSTANCE;
 
   private Components(Configuration conf, HashMap<String,CandidateCacheStorageDecorator> storages, Map<String, KornakapiRecommender> recommenders,
-        Map<String, Trainer> trainers, TrainingScheduler scheduler, DelegatingPreferenceChangeListenerForLabel preferenceChangeListener2, LinkedList<String>labels, BasicDataSource dataSource, CandidateCacheStorageDecorator domainIndependetStorage) {
+        Map<String, Trainer> trainers, TaskScheduler scheduler, DelegatingPreferenceChangeListenerForLabel preferenceChangeListener, LinkedList<String>labels, BasicDataSource dataSource, CandidateCacheStorageDecorator domainIndependetStorage) {
+
     this.conf = conf;
     this.storages = storages;
     this.recommenders = recommenders;
     this.trainers = trainers;
     this.scheduler = scheduler;
-    this.preferenceChangeListener = preferenceChangeListener2;
+    this.preferenceChangeListener = preferenceChangeListener;
     this.labels = labels;
     this.dataSource = dataSource;
     this.domainIndependetStorage = domainIndependetStorage;
   }
 
+
   public static synchronized void init(Configuration conf, HashMap<String,CandidateCacheStorageDecorator> storages,
-      Map<String, KornakapiRecommender> recommenders, Map<String, Trainer> trainers, TrainingScheduler scheduler,
+      Map<String, KornakapiRecommender> recommenders, Map<String, Trainer> trainers, TaskScheduler scheduler,
       DelegatingPreferenceChangeListenerForLabel preferenceChangeListener2, LinkedList<String> labels, BasicDataSource dataSource, CandidateCacheStorageDecorator domainIndependetStorage) {
+
     Preconditions.checkState(INSTANCE == null);
     INSTANCE = new Components(conf, storages, recommenders, trainers, scheduler, preferenceChangeListener2, labels, dataSource, domainIndependetStorage);
   }
@@ -98,7 +106,7 @@ public class Components {
 	  return this.domainIndependetStorage;
   }
 
-  public TrainingScheduler scheduler() {
+  public TaskScheduler scheduler() {
     return scheduler;
   }
 

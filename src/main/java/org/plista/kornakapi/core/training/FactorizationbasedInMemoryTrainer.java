@@ -54,7 +54,6 @@ public class FactorizationbasedInMemoryTrainer extends AbstractTrainer {
 	
 	      new FilePersistenceStrategy(targetFile).maybePersist(factorization);
     	}
-
     } catch (Exception e) {
       throw new IOException(e);
     }
