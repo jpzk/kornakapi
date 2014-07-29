@@ -16,9 +16,8 @@ public class PurgeOldPreferencesJob implements Job {
 
   @Override
   public void execute(JobExecutionContext context) throws JobExecutionException {
-
     Components components = Components.instance();
-    Storage storage = components.storage();
+    Storage storage = components.getDomainIndependetStorage();
 
     log.info("Purging of old preferences started.");
     try {
