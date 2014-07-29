@@ -23,6 +23,7 @@ public class StorageConfiguration {
   private String username;
   private String password;
   private int minNumUserRatings;
+  private int timeWindow;
 	
   public int getMinNumUserRatings(){
 	return minNumUserRatings;
@@ -80,5 +81,9 @@ public class StorageConfiguration {
 
   public void setPurgePreferencesOlderThanHours(int purgePreferencesOlderThanHours) {
     this.purgePreferencesOlderThanHours = purgePreferencesOlderThanHours;
+  }
+  
+  public int getTimeWindow(){
+	  return timeWindow;
   }
 }

@@ -68,6 +68,7 @@ public class MySqlStorage implements Storage {
 
   protected final BasicDataSource dataSource;
   private final JDBCDataModel dataModel;
+  private int timeWindow;
 
   private static final String IMPORT_QUERY =
       "INSERT INTO taste_preferences (user_id, item_id, preference) VALUES (?, ?, ?) " +
@@ -125,6 +126,11 @@ public class MySqlStorage implements Storage {
             "label",
              label);
     this.dataSource = dataSource;
+    this.timeWindow = storageConf.getTimeWindow();
+    if(timeWindow % 6 !=0 || timeWindow == 0){
+    	timeWindow = 24;
+    }
+
   }
 
   @Override
@@ -213,8 +219,8 @@ public class MySqlStorage implements Storage {
       conn = dataSource.getConnection();
 
       long hours = System.currentTimeMillis() / (3600 * 1000);
-      int selDay = (int) (hours % 72);
-      int selfHalfDay = selDay / 12;
+      int selDay = (int) (hours % timeWindow);
+      int selfHalfDay = selDay / (timeWindow / 6);
 
       switchStmt = conn.prepareStatement(SWITCH_CURRENT_PARTITION_QUERY);
       switchStmt.setInt(1, selfHalfDay);
