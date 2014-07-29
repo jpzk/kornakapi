@@ -230,9 +230,8 @@ public class BigBangServletContextListener implements ServletContextListener {
     Closeables.closeQuietly(components.scheduler());
     Closeables.closeQuietly(components.getDomainIndependetStorage());
   }
-  private void putRecommender(KornakapiRecommender recommender, String recommenderName) throws SchedulerException{
+  private void putRecommender(KornakapiRecommender recommender, String recommenderName) {
       recommenders.put(recommenderName, recommender);
-
   }
   private void putTrainer(AbstractTrainer trainer,  RecommenderConfig factorizationbasedConf, String recommenderName,String label ) throws SchedulerException{
       trainers.put(recommenderName, trainer);
