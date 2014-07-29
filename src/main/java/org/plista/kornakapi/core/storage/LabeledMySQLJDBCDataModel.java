@@ -148,29 +148,29 @@ public class LabeledMySQLJDBCDataModel extends AbstractJDBCDataModel{
 	    super(dataSource, preferenceTable, userIDColumn, itemIDColumn, preferenceColumn,
 	        // getPreferenceSQL
 	        "SELECT " + preferenceColumn + " FROM " + preferenceTable + " WHERE " + userIDColumn + "=? AND "
-	            + itemIDColumn + "=?" + " INNER JOIN " + candidatesTable + " c USING ("+ itemIDColumn + ") WHERE c." +labelColumn +"="+ label,
+	            + itemIDColumn + "=?" + " INNER JOIN " + candidatesTable + " c USING ("+ itemIDColumn + ") WHERE c." +labelColumn +"="+ "\""+label + "\"",
 	        // getPreferenceTimeSQL
 	        "SELECT " + timestampColumn + " FROM " + preferenceTable + " WHERE " + userIDColumn + "=? AND "
 	            + itemIDColumn + "=?",
 	        // getUserSQL
 	        "SELECT DISTINCT " + userIDColumn + ", " + itemIDColumn + ", " + preferenceColumn + " FROM " + preferenceTable
-	             + " INNER JOIN " + candidatesTable + " c USING ("+ itemIDColumn + ") WHERE c." +labelColumn +"="+ label + " && " + userIDColumn + "=? " + " ORDER BY " + itemIDColumn,
+	             + " INNER JOIN " + candidatesTable + " c USING ("+ itemIDColumn + ") WHERE c." +labelColumn +"="+ "\""+label + "\"" + " && " + userIDColumn + "=? " + " ORDER BY " + itemIDColumn,
 	        // getAllUsersSQL
 	        "SELECT DISTINCT " + userIDColumn + ", " + itemIDColumn + ", " + preferenceColumn + " FROM " + preferenceTable
-	             + " INNER JOIN " + candidatesTable + " c USING ("+ itemIDColumn + ") WHERE c." +labelColumn +"="+ label + " ORDER BY " + userIDColumn + ", " + itemIDColumn,
+	             + " INNER JOIN " + candidatesTable + " c USING ("+ itemIDColumn + ") WHERE c." +labelColumn +"="+ "\""+label + "\"" + " ORDER BY " + userIDColumn + ", " + itemIDColumn,
 	        // getNumItemsSQL
-	             "SELECT COUNT(DISTINCT " + itemIDColumn + ") FROM " + preferenceTable + " INNER JOIN " + candidatesTable + " c USING ("+ itemIDColumn + ") WHERE c." +labelColumn +"="+ label,
+	             "SELECT COUNT(DISTINCT " + itemIDColumn + ") FROM " + preferenceTable + " INNER JOIN " + candidatesTable + " c USING ("+ itemIDColumn + ") WHERE c." +labelColumn +"="+ "\""+label + "\"",
 	        // getNumUsersSQL
-	        "SELECT COUNT(DISTINCT " + userIDColumn + ") FROM " + preferenceTable + " INNER JOIN " + candidatesTable + " c USING ("+ itemIDColumn + ") WHERE c." +labelColumn +"="+ label,
+	        "SELECT COUNT(DISTINCT " + userIDColumn + ") FROM " + preferenceTable + " INNER JOIN " + candidatesTable + " c USING ("+ itemIDColumn + ") WHERE c." +labelColumn +"="+ "\""+label + "\"",
 	        // setPreferenceSQL
 	        "INSERT INTO " + preferenceTable + '(' + userIDColumn + ',' + itemIDColumn + ',' + preferenceColumn
 	            + ") VALUES (?,?,?) ON DUPLICATE KEY UPDATE " + preferenceColumn + "=?",
 	        // removePreference SQL
 	        "DELETE FROM " + preferenceTable + " WHERE " + userIDColumn + "=? AND " + itemIDColumn + "=?",
 	        // getUsersSQL
-	        "SELECT DISTINCT " + userIDColumn + " FROM (SELECT " + userIDColumn +", " + itemIDColumn +" FROM " + preferenceTable + " INNER JOIN " + candidatesTable +" c USING ("+ itemIDColumn + ") WHERE c." +labelColumn +"="+ label + " ORDER BY " + userIDColumn + ") as t",
+	        "SELECT DISTINCT " + userIDColumn + " FROM (SELECT " + userIDColumn +", " + itemIDColumn +" FROM " + preferenceTable + " INNER JOIN " + candidatesTable +" c USING ("+ itemIDColumn + ") WHERE c." +labelColumn +"="+ "\""+label + "\"" + " ORDER BY " + userIDColumn + ") as t",
 	        // getItemsSQL
-	        "SELECT DISTINCT " + itemIDColumn + " FROM " + preferenceTable + " INNER JOIN " + candidatesTable + " c USING ("+ itemIDColumn + ") WHERE c." +labelColumn +"="+ label + " ORDER BY " + itemIDColumn,
+	        "SELECT DISTINCT " + itemIDColumn + " FROM " + preferenceTable + " INNER JOIN " + candidatesTable + " c USING ("+ itemIDColumn + ") WHERE c." +labelColumn +"="+ "\""+label + "\"" + " ORDER BY " + itemIDColumn,
 	        // getPrefsForItemSQL
 	        "SELECT DISTINCT " + userIDColumn + ", " + itemIDColumn + ", " + preferenceColumn + " FROM " + preferenceTable
 	            + " WHERE " + itemIDColumn + "=? ORDER BY " + userIDColumn,
