@@ -113,9 +113,9 @@ public class RecommendServlet extends BaseServlet {
       writer.write("[");
       for (RecommendedItem recommendedItem : recommendedItems) {
         writer.write(separator);
-        writer.write("{itemID:");
+        writer.write("{\"itemID\":");
         writer.write(String.valueOf(recommendedItem.getItemID()));
-        writer.write(",value:");
+        writer.write(",\"value\":");
         writer.write(String.valueOf(recommendedItem.getValue()));
         writer.write("}");
         separator = ",";
