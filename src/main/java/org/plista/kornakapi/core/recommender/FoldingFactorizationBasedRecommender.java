@@ -175,9 +175,14 @@ public final class FoldingFactorizationBasedRecommender extends AbstractRecommen
     double[] foldedInUserFeatures = foldingFactorization.foldInAnonymousUser(itemIDs);
 
     FastIDSet possibleItemIDs = getAllOtherItems(Long.MIN_VALUE, preferences);
-
-    List<RecommendedItem> topItems = TopItems.getTopItems(howMany, possibleItemIDs.iterator(), rescorer,
-        new AnonymousEstimator(foldedInUserFeatures));
+    List<RecommendedItem> topItems;
+ 
+    if (numEstimationThreads > 1) {
+        topItems = ParallelTopItems.getTopItems(howMany, numEstimationThreads, possibleItemIDs, rescorer,
+        		new AnonymousEstimator(foldedInUserFeatures));
+      } else {
+        topItems = TopItems.getTopItems(howMany, possibleItemIDs.iterator(), rescorer, new AnonymousEstimator(foldedInUserFeatures));
+      }
     log.debug("Recommendations are: {}", topItems);
 
     return topItems;
