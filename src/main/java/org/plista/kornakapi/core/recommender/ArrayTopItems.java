@@ -17,7 +17,9 @@ package org.plista.kornakapi.core.recommender;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+
 import org.apache.mahout.cf.taste.common.NoSuchItemException;
+import org.apache.mahout.cf.taste.common.NoSuchUserException;
 import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.cf.taste.impl.recommender.ByValueRecommendedItemComparator;
 import org.apache.mahout.cf.taste.impl.recommender.GenericRecommendedItem;
@@ -49,6 +51,8 @@ public class ArrayTopItems {
         try {
           preference = estimator.estimate(itemID);
         } catch (NoSuchItemException nsie) {
+          continue;
+        } catch (NoSuchUserException nsue){
           continue;
         }
         double rescoredPref = rescorer == null ? preference : rescorer.rescore(itemID, preference);

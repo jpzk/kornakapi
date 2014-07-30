@@ -16,7 +16,9 @@
 package org.plista.kornakapi.core.recommender;
 
 import com.google.common.base.Preconditions;
+
 import org.apache.mahout.cf.taste.common.NoSuchItemException;
+import org.apache.mahout.cf.taste.common.NoSuchUserException;
 import org.apache.mahout.cf.taste.common.Refreshable;
 import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.cf.taste.impl.common.FastIDSet;
@@ -34,6 +36,7 @@ import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 import org.plista.kornakapi.KornakapiRecommender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -141,20 +144,14 @@ public final class FoldingFactorizationBasedRecommender extends AbstractRecommen
   }
 
   @Override
-  public float estimatePreference(long userID, long itemID) throws TasteException {
-  double[] userFeatures = foldingFactorization.factorization().getUserFeatures(userID);
-    double[] itemFeatures = foldingFactorization.factorization().getItemFeatures(itemID);
-
-    return (float) dotProduct(userFeatures, itemFeatures);
+  public float estimatePreference(long userID, long itemID) throws TasteException, NoSuchItemException, NoSuchUserException {
+	  double[] userFeatures = foldingFactorization.factorization().getUserFeatures(userID);
+	  double[] itemFeatures = foldingFactorization.factorization().getItemFeatures(itemID);
+	  return (float) dotProduct(userFeatures, itemFeatures);
   }
 
   private float estimatePreferenceForAnonymous(double[] foldedInUserFeatures, long itemID) throws NoSuchItemException {
-	  double[] itemFeatures = foldingFactorization.factorization().getItemFeatures(itemID);
-	  for (int feature = 0; feature < itemFeatures.length; feature++) {
-		  itemFeatures[feature] = itemFeatures[feature];
-	  }
-    
-
+	double[] itemFeatures = foldingFactorization.factorization().getItemFeatures(itemID);
     return (float) dotProduct(foldedInUserFeatures, itemFeatures);
   }
 

@@ -78,7 +78,9 @@ public class ParallelTopItems {
     if (topItems.isEmpty()) {
       return Collections.EMPTY_LIST;
     }
-
+    if(topItems.size() < howMany){
+    	howMany = topItems.size();
+    }
     Collections.sort(topItems, ByValueRecommendedItemComparator.getInstance());
     List<RecommendedItem> recommendedItems = topItems.subList(0, howMany);
 
