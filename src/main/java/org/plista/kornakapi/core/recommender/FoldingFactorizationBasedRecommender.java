@@ -188,7 +188,7 @@ public final class FoldingFactorizationBasedRecommender extends AbstractRecommen
     long estimateDuration = System.currentTimeMillis() - estimateStart;
     if (log.isInfoEnabled()) {
     	log.info("fetched {} interactions of Anonymous ({} itemIDs in {} ms, estimation in {} ms)", 
-    			new Object[] { preferences.length(), possibleItemIDs.size(), fetchItemIDsDuration, estimateDuration });
+    			new Object[] { preferences.length(), preferences.length(), fetchItemIDsDuration, estimateDuration });
 
     }
     return topItems;
