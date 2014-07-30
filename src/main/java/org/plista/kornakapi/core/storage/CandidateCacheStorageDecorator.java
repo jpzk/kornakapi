@@ -83,10 +83,13 @@ public class CandidateCacheStorageDecorator implements Storage {
   @Override
   public void addCandidate(String label, long itemID) throws IOException {
     delegate.addCandidate(label, itemID);
+    invalidateCache(label);
+    /**
     cache.getIfPresent(label).add(itemID);
     if((int)(System.currentTimeMillis() * 1000) % 10 == 0){
         invalidateCache(label);
     }
+    **/
 
   }
 
