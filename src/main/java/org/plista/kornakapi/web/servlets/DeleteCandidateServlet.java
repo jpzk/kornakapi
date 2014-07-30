@@ -38,7 +38,7 @@ public class DeleteCandidateServlet extends BaseServlet {
         this.storages().get(label).deleteCandidate(label, itemID);
     } catch(NullPointerException e){
     	  if(log.isInfoEnabled()){
-    		  log.info("No Recommender found for domain {} and itemID", label, itemID );
+    		  log.info("No Recommender found for domain {} and itemID {}", label, itemID );
     	  }
     }
   }
