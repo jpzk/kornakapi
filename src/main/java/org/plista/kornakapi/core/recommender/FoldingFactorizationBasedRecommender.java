@@ -132,8 +132,8 @@ public final class FoldingFactorizationBasedRecommender extends AbstractRecommen
       numCandidates = ((FixedCandidatesIDRescorer) rescorer).numCandidates();
     }
     
-    if (log.isDebugEnabled()) {
-    	log.debug("fetched {} interactions of user {} ({} itemIDs in {} ms, estimation of {} in {} ms)", 
+    if (log.isInfoEnabled()) {
+    	log.info("fetched {} interactions of user {} ({} itemIDs in {} ms, estimation of {} in {} ms)", 
     			new Object[] { preferencesFromUser.length(), userID, possibleItemIDs.size(), fetchItemIDsDuration, numCandidates, estimateDuration });
 
     }
@@ -168,7 +168,11 @@ public final class FoldingFactorizationBasedRecommender extends AbstractRecommen
       throws TasteException {
 
     //TODO what to do here in the non-implicit case? choose a rating?
+	long fetchItemIDsStart = System.currentTimeMillis();
     PreferenceArray preferences = asPreferences(itemIDs);
+    long fetchItemIDsDuration = System.currentTimeMillis() - fetchItemIDsStart;
+
+    long estimateStart = System.currentTimeMillis();
     double[] foldedInUserFeatures = foldingFactorization.foldInAnonymousUser(itemIDs);
 
     FastIDSet possibleItemIDs = getAllOtherItems(Long.MIN_VALUE, preferences);
@@ -181,7 +185,12 @@ public final class FoldingFactorizationBasedRecommender extends AbstractRecommen
         topItems = TopItems.getTopItems(howMany, possibleItemIDs.iterator(), rescorer, new AnonymousEstimator(foldedInUserFeatures));
       }
     log.debug("Recommendations are: {}", topItems);
+    long estimateDuration = System.currentTimeMillis() - estimateStart;
+    if (log.isInfoEnabled()) {
+    	log.info("fetched {} interactions of Anonymous ({} itemIDs in {} ms, estimation in {} ms)", 
+    			new Object[] { preferences.length(), possibleItemIDs.size(), fetchItemIDsDuration, estimateDuration });
 
+    }
     return topItems;
   }
 
