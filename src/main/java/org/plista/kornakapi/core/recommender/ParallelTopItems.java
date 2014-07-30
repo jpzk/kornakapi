@@ -35,7 +35,7 @@ public class ParallelTopItems {
   public static List<RecommendedItem> getTopItems(int howMany, int numThreads, FastIDSet possibleItemIDs,
       final IDRescorer rescorer, final TopItems.Estimator<Long> estimator) throws TasteException {
 
-    Preconditions.checkArgument(numThreads > 2);
+    Preconditions.checkArgument(numThreads > 1);
     Preconditions.checkNotNull(possibleItemIDs);
     Preconditions.checkNotNull(estimator);
 
