@@ -15,7 +15,7 @@
 
 package org.plista.kornakapi.core.training;
 
-import org.apache.mahout.cf.taste.impl.recommender.svd.ALSWRFactorizer;
+
 import org.apache.mahout.cf.taste.impl.recommender.svd.Factorization;
 import org.apache.mahout.cf.taste.impl.recommender.svd.FilePersistenceStrategy;
 import org.apache.mahout.cf.taste.model.DataModel;
