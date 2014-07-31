@@ -183,13 +183,13 @@ public class ALSWRFactorizer extends AbstractFactorizer {
 
       try {
 
+        final ImplicitFeedbackAlternatingLeastSquaresSolver implicitFeedbackSolver = usesImplicitFeedback
+            ? new ImplicitFeedbackAlternatingLeastSquaresSolver(numFeatures, lambda, alpha, itemY) : null;
 
 
         while (userIDsIterator.hasNext()) {
           final long userID = userIDsIterator.nextLong();
           if(usesImplicitFeedback){
-              final ImplicitFeedbackAlternatingLeastSquaresSolver implicitFeedbackSolver = usesImplicitFeedback
-                      ? new ImplicitFeedbackAlternatingLeastSquaresSolver(numFeatures, lambda, alpha, itemY) : null;
               final PreferenceArray userPrefs = dataModel.getPreferencesFromUser(userID);
               queue.execute(new Runnable() {
                 @Override
@@ -232,9 +232,10 @@ public class ALSWRFactorizer extends AbstractFactorizer {
       queue = createQueue();
 
       try {
+        	final ImplicitFeedbackAlternatingLeastSquaresSolver implicitFeedbackSolver = usesImplicitFeedback
+      	            ? new ImplicitFeedbackAlternatingLeastSquaresSolver(numFeatures, lambda, alpha, userY) : null;
       		if(usesImplicitFeedback){
-              	final ImplicitFeedbackAlternatingLeastSquaresSolver implicitFeedbackSolver = usesImplicitFeedback
-          	            ? new ImplicitFeedbackAlternatingLeastSquaresSolver(numFeatures, lambda, alpha, userY) : null;
+
 
           	        while (itemIDsIterator.hasNext()) {
 
