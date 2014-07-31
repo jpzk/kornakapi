@@ -189,10 +189,17 @@ public class ALSWRFactorizer extends AbstractFactorizer {
         while (userIDsIterator.hasNext()) {
           final long userID = userIDsIterator.nextLong();
           if(usesImplicitFeedback){
-              final PreferenceArray userPrefs = dataModel.getPreferencesFromUser(userID);
+              
               queue.execute(new Runnable() {
                 @Override
                 public void run() { 
+                PreferenceArray userPrefs = null;
+				try {
+					userPrefs = dataModel.getPreferencesFromUser(userID);
+				} catch (TasteException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
                   Vector userFeatures = implicitFeedbackSolver.solve(sparseUserRatingVector(userPrefs));
                   features.setFeatureColumnInU(userIndex(userID), userFeatures);
                 }
