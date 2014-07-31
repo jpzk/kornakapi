@@ -194,11 +194,12 @@ public class ALSWRFactorizer extends AbstractFactorizer {
             @Override
             public void run() {
               List<Vector> featureVectors = Lists.newArrayList();
-              while (itemIDsFromUser.hasNext()) {
-                long itemID = itemIDsFromUser.nextLong();
-                featureVectors.add(features.getItemFeatureColumn(itemIndex(itemID)));
+              if(!usesImplicitFeedback){
+                  while (itemIDsFromUser.hasNext()) {
+                      long itemID = itemIDsFromUser.nextLong();
+                      featureVectors.add(features.getItemFeatureColumn(itemIndex(itemID)));
+                    }
               }
-
               Vector userFeatures = usesImplicitFeedback
                   ? implicitFeedbackSolver.solve(sparseUserRatingVector(userPrefs))
                   : AlternatingLeastSquaresSolver.solve(featureVectors, ratingVector(userPrefs), lambda, numFeatures);
