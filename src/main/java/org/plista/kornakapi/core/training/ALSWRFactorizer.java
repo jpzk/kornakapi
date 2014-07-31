@@ -54,7 +54,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class ALSWRFactorizer extends AbstractFactorizer {
 
-  private final DataModel dataModel;
+  private DataModel dataModel;
 
   /** number of features used to compute this factorization */
   private final int numFeatures;
