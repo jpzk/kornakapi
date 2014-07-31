@@ -188,25 +188,33 @@ public class ALSWRFactorizer extends AbstractFactorizer {
 
         while (userIDsIterator.hasNext()) {
           final long userID = userIDsIterator.nextLong();
-          final LongPrimitiveIterator itemIDsFromUser = dataModel.getItemIDsFromUser(userID).iterator();
-          final PreferenceArray userPrefs = dataModel.getPreferencesFromUser(userID);
-          queue.execute(new Runnable() {
-            @Override
-            public void run() {
-              List<Vector> featureVectors = Lists.newArrayList();
-              if(!usesImplicitFeedback){
+          if(usesImplicitFeedback){
+              final PreferenceArray userPrefs = dataModel.getPreferencesFromUser(userID);
+              queue.execute(new Runnable() {
+                @Override
+                public void run() { 
+                  Vector userFeatures = implicitFeedbackSolver.solve(sparseUserRatingVector(userPrefs));
+                  features.setFeatureColumnInU(userIndex(userID), userFeatures);
+                }
+              });
+        	  
+          }else{
+              final LongPrimitiveIterator itemIDsFromUser = dataModel.getItemIDsFromUser(userID).iterator();
+              final PreferenceArray userPrefs = dataModel.getPreferencesFromUser(userID);
+              queue.execute(new Runnable() {
+                @Override
+                public void run() {
+                  List<Vector> featureVectors = Lists.newArrayList();
                   while (itemIDsFromUser.hasNext()) {
                       long itemID = itemIDsFromUser.nextLong();
                       featureVectors.add(features.getItemFeatureColumn(itemIndex(itemID)));
-                    }
-              }
-              Vector userFeatures = usesImplicitFeedback
-                  ? implicitFeedbackSolver.solve(sparseUserRatingVector(userPrefs))
-                  : AlternatingLeastSquaresSolver.solve(featureVectors, ratingVector(userPrefs), lambda, numFeatures);
+                  }  
+                  Vector userFeatures = AlternatingLeastSquaresSolver.solve(featureVectors, ratingVector(userPrefs), lambda, numFeatures);
+                  features.setFeatureColumnInU(userIndex(userID), userFeatures);
+                }
+              });
+          }
 
-              features.setFeatureColumnInU(userIndex(userID), userFeatures);
-            }
-          });
         }
       } finally {
         queue.shutdown();
