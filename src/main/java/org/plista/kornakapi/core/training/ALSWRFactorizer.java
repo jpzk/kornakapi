@@ -69,7 +69,6 @@ public class ALSWRFactorizer extends AbstractFactorizer {
 
   private final int numTrainingThreads;
   
-  private ImplicitFeedbackAlternatingLeastSquaresSolver solver;
 
   private static final double DEFAULT_ALPHA = 40;
 
@@ -190,14 +189,14 @@ public class ALSWRFactorizer extends AbstractFactorizer {
           final long userID = userIDsIterator.nextLong();
           if(usesImplicitFeedback){
 
-             solver = usesImplicitFeedback
+              final ImplicitFeedbackAlternatingLeastSquaresSolver implicitFeedbackSolver = usesImplicitFeedback
                  ? new ImplicitFeedbackAlternatingLeastSquaresSolver(numFeatures, lambda, alpha, itemY) : null;
               final PreferenceArray userPrefs = dataModel.getPreferencesFromUser(userID);
               queue.execute(new Runnable() {
                 @Override
                 public void run() { 
                 
-                Vector userFeatures = solver.solve(sparseUserRatingVector(userPrefs));
+                Vector userFeatures = implicitFeedbackSolver.solve(sparseUserRatingVector(userPrefs));
                 features.setFeatureColumnInU(userIndex(userID), userFeatures);
 
                 }
@@ -238,14 +237,14 @@ public class ALSWRFactorizer extends AbstractFactorizer {
 
 
           	        while (itemIDsIterator.hasNext()) {
-          	        	solver = usesImplicitFeedback
+                  	final ImplicitFeedbackAlternatingLeastSquaresSolver implicitFeedbackSolver = usesImplicitFeedback
                   	            ? new ImplicitFeedbackAlternatingLeastSquaresSolver(numFeatures, lambda, alpha, userY) : null;
           	          final long itemID = itemIDsIterator.nextLong();
           	          final PreferenceArray itemPrefs = dataModel.getPreferencesForItem(itemID);
           	          queue.execute(new Runnable() {
           	            @Override
           	            public void run() {
-          	            Vector itemFeatures = solver.solve(sparseItemRatingVector(itemPrefs));
+          	            Vector itemFeatures = implicitFeedbackSolver.solve(sparseItemRatingVector(itemPrefs));
           	            features.setFeatureColumnInM(itemIndex(itemID), itemFeatures);
           	            }
           	          });
