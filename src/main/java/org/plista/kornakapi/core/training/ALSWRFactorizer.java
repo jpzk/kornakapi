@@ -194,22 +194,15 @@ public class ALSWRFactorizer extends AbstractFactorizer {
                 @Override
                 public void run() { 
                 PreferenceArray userPrefs = null;
-                double startfetch = System.currentTimeMillis();
+                
 				try {
 					userPrefs = dataModel.getPreferencesFromUser(userID);
 				} catch (TasteException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-                double endfetch =  System.currentTimeMillis()- startfetch;
-                
-                double startsolve = System.currentTimeMillis();
-                Vector userFeatures = implicitFeedbackSolver.solve(sparseUserRatingVector(userPrefs));
-                features.setFeatureColumnInU(userIndex(userID), userFeatures);
-                double endsolve =  System.currentTimeMillis() -startsolve ;
-                if(log.isInfoEnabled()){
-                	log.info("Fetched in ms: {}, Solved in: {}",endfetch,endsolve);
-                }
+                  Vector userFeatures = implicitFeedbackSolver.solve(sparseUserRatingVector(userPrefs));
+                  features.setFeatureColumnInU(userIndex(userID), userFeatures);
                 }
               });
         	  
