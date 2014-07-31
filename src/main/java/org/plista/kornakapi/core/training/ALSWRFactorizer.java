@@ -167,13 +167,10 @@ public class ALSWRFactorizer extends AbstractFactorizer {
     final Features features = new Features(this);
 
     /* feature maps necessary for solving for implicit feedback */
-    OpenIntObjectHashMap<Vector> userY = null;
-    final OpenIntObjectHashMap<Vector> itemY = null;
+    final OpenIntObjectHashMap<Vector> userY = userFeaturesMapping(dataModel.getUserIDs(), dataModel.getNumUsers(), features.getU());
+    final OpenIntObjectHashMap<Vector> itemY = itemFeaturesMapping(dataModel.getItemIDs(), dataModel.getNumItems(), features.getM());
 
-    if (usesImplicitFeedback) {
-      userY = userFeaturesMapping(dataModel.getUserIDs(), dataModel.getNumUsers(), features.getU());
-      itemY = itemFeaturesMapping(dataModel.getItemIDs(), dataModel.getNumItems(), features.getM());
-    }
+
     LongPrimitiveIterator userIDsIterator = dataModel.getUserIDs();
     LongPrimitiveIterator itemIDsIterator = dataModel.getItemIDs();
     for (int iteration = 0; iteration < numIterations; iteration++) {
