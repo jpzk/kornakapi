@@ -183,25 +183,18 @@ public class ALSWRFactorizer extends AbstractFactorizer {
 
       try {
 
-        final ImplicitFeedbackAlternatingLeastSquaresSolver implicitFeedbackSolver = usesImplicitFeedback
-            ? new ImplicitFeedbackAlternatingLeastSquaresSolver(numFeatures, lambda, alpha, itemY) : null;
 
         while (userIDsIterator.hasNext()) {
           final long userID = userIDsIterator.nextLong();
           if(usesImplicitFeedback){
+
+              final ImplicitFeedbackAlternatingLeastSquaresSolver implicitFeedbackSolver = usesImplicitFeedback
+                 ? new ImplicitFeedbackAlternatingLeastSquaresSolver(numFeatures, lambda, alpha, itemY) : null;
+              final PreferenceArray userPrefs = dataModel.getPreferencesFromUser(userID);
               queue.execute(new Runnable() {
                 @Override
                 public void run() { 
-                PreferenceArray userPrefs = null;
-
-				try {
-					userPrefs = dataModel.getPreferencesFromUser(userID);
-				} catch (TasteException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
-
+                
                 Vector userFeatures = implicitFeedbackSolver.solve(sparseUserRatingVector(userPrefs));
                 features.setFeatureColumnInU(userIndex(userID), userFeatures);
 
@@ -240,10 +233,11 @@ public class ALSWRFactorizer extends AbstractFactorizer {
 
       try {
       		if(usesImplicitFeedback){
-          		final ImplicitFeedbackAlternatingLeastSquaresSolver implicitFeedbackSolver = usesImplicitFeedback
-          	            ? new ImplicitFeedbackAlternatingLeastSquaresSolver(numFeatures, lambda, alpha, userY) : null;
+
 
           	        while (itemIDsIterator.hasNext()) {
+                  	final ImplicitFeedbackAlternatingLeastSquaresSolver implicitFeedbackSolver = usesImplicitFeedback
+                  	            ? new ImplicitFeedbackAlternatingLeastSquaresSolver(numFeatures, lambda, alpha, userY) : null;
           	          final long itemID = itemIDsIterator.nextLong();
           	          final PreferenceArray itemPrefs = dataModel.getPreferencesForItem(itemID);
           	          queue.execute(new Runnable() {
