@@ -189,20 +189,22 @@ public class ALSWRFactorizer extends AbstractFactorizer {
         while (userIDsIterator.hasNext()) {
           final long userID = userIDsIterator.nextLong();
           if(usesImplicitFeedback){
-              
               queue.execute(new Runnable() {
                 @Override
                 public void run() { 
                 PreferenceArray userPrefs = null;
-                
+
 				try {
 					userPrefs = dataModel.getPreferencesFromUser(userID);
 				} catch (TasteException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-                  Vector userFeatures = implicitFeedbackSolver.solve(sparseUserRatingVector(userPrefs));
-                  features.setFeatureColumnInU(userIndex(userID), userFeatures);
+
+
+                Vector userFeatures = implicitFeedbackSolver.solve(sparseUserRatingVector(userPrefs));
+                features.setFeatureColumnInU(userIndex(userID), userFeatures);
+
                 }
               });
         	  
@@ -237,30 +239,41 @@ public class ALSWRFactorizer extends AbstractFactorizer {
       queue = createQueue();
 
       try {
+      		if(usesImplicitFeedback){
+          		final ImplicitFeedbackAlternatingLeastSquaresSolver implicitFeedbackSolver = usesImplicitFeedback
+          	            ? new ImplicitFeedbackAlternatingLeastSquaresSolver(numFeatures, lambda, alpha, userY) : null;
 
-        final ImplicitFeedbackAlternatingLeastSquaresSolver implicitFeedbackSolver = usesImplicitFeedback
-            ? new ImplicitFeedbackAlternatingLeastSquaresSolver(numFeatures, lambda, alpha, userY) : null;
+          	        while (itemIDsIterator.hasNext()) {
+          	          final long itemID = itemIDsIterator.nextLong();
+          	          final PreferenceArray itemPrefs = dataModel.getPreferencesForItem(itemID);
+          	          queue.execute(new Runnable() {
+          	            @Override
+          	            public void run() {
+          	            Vector itemFeatures = implicitFeedbackSolver.solve(sparseItemRatingVector(itemPrefs));
+          	            features.setFeatureColumnInM(itemIndex(itemID), itemFeatures);
+          	            }
+          	          });
+          	        }
+      		}else{
+          	        while (itemIDsIterator.hasNext()) {
+     	        	
+          	          final long itemID = itemIDsIterator.nextLong();
+          	          final PreferenceArray itemPrefs = dataModel.getPreferencesForItem(itemID);
+          	          queue.execute(new Runnable() {
+          	            @Override
+          	            public void run() {
+          	              List<Vector> featureVectors = Lists.newArrayList();
+          	              for (Preference pref : itemPrefs) {
+          	                long userID = pref.getUserID();
+          	                featureVectors.add(features.getUserFeatureColumn(userIndex(userID)));
+          	              }
+          	              Vector itemFeatures = AlternatingLeastSquaresSolver.solve(featureVectors, ratingVector(itemPrefs), lambda, numFeatures);
+          	              features.setFeatureColumnInM(itemIndex(itemID), itemFeatures);
+          	            }
+          	          });
+          	        }
+      		}
 
-        while (itemIDsIterator.hasNext()) {
-          final long itemID = itemIDsIterator.nextLong();
-          final PreferenceArray itemPrefs = dataModel.getPreferencesForItem(itemID);
-          queue.execute(new Runnable() {
-            @Override
-            public void run() {
-              List<Vector> featureVectors = Lists.newArrayList();
-              for (Preference pref : itemPrefs) {
-                long userID = pref.getUserID();
-                featureVectors.add(features.getUserFeatureColumn(userIndex(userID)));
-              }
-
-              Vector itemFeatures = usesImplicitFeedback
-                  ? implicitFeedbackSolver.solve(sparseItemRatingVector(itemPrefs))
-                  : AlternatingLeastSquaresSolver.solve(featureVectors, ratingVector(itemPrefs), lambda, numFeatures);
-
-              features.setFeatureColumnInM(itemIndex(itemID), itemFeatures);
-            }
-          });
-        }
       } finally {
         queue.shutdown();
         try {
