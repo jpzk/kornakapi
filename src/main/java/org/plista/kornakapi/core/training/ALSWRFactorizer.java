@@ -19,6 +19,9 @@ package org.plista.kornakapi.core.training;
 
 import com.google.common.collect.Lists;
 
+import org.apache.commons.math.linear.Array2DRowRealMatrix;
+import org.apache.commons.math.linear.LUDecompositionImpl;
+import org.apache.commons.math.linear.RealMatrix;
 import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.cf.taste.impl.common.FullRunningAverage;
 import org.apache.mahout.cf.taste.impl.common.LongPrimitiveIterator;
@@ -173,9 +176,11 @@ public class ALSWRFactorizer extends AbstractFactorizer {
       userY = userFeaturesMapping(dataModel.getUserIDs(), dataModel.getNumUsers(), features.getU());
       itemY = itemFeaturesMapping(dataModel.getItemIDs(), dataModel.getNumItems(), features.getM());
     }
-    LongPrimitiveIterator userIDsIterator = dataModel.getUserIDs();
-    LongPrimitiveIterator itemIDsIterator = dataModel.getItemIDs();
+
+
     for (int iteration = 0; iteration < numIterations; iteration++) {
+	  LongPrimitiveIterator userIDsIterator = dataModel.getUserIDs();
+	  LongPrimitiveIterator itemIDsIterator = dataModel.getItemIDs();
       log.info("iteration {}", iteration);
 
       /* fix M - compute U */
@@ -277,6 +282,25 @@ public class ALSWRFactorizer extends AbstractFactorizer {
           log.warn("Error when computing item features", e);
         }
       }
+      if(log.isInfoEnabled()){
+    	  userIDsIterator = dataModel.getUserIDs();
+	      double error = 0;
+	      while (userIDsIterator.hasNext()) {
+	    	  Long userID = userIDsIterator.next();
+	    	  PreferenceArray userPrefs = dataModel.getPreferencesFromUser(userID);
+	    	  Vector userf = features.getUserFeatureColumn(userIndex(userID));
+	    	  long[] itemIDs = userPrefs.getIDs();
+	    	  int idx = 0;
+	    	  for(long itemID: itemIDs ){
+	    		  Vector itemf = features.getItemFeatureColumn(itemIndex(itemID));
+	    		  double pref = itemf.dot(userf);
+	    		  double realpref = userPrefs.getValue(idx);
+	    		  idx++;
+	    		  error = error + Math.abs(pref - realpref);    		  
+	    	  }	  
+	      }
+	      log.info("Error at iteration {} is: {}", iteration, error);
+      }    
     }
 
     log.info("finished computation of the factorization...");
