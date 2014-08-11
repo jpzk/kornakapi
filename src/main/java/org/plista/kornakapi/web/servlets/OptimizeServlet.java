@@ -19,7 +19,9 @@ public class OptimizeServlet extends BaseServlet{
 
 	    String label = getParameter(request, Parameters.LABEL, true);
 	    String optimizerName = "factorizationbasedOptimizer_" + label;
-
+	    if(log.isInfoEnabled()){
+	    	log.info("Starting optimization for {}", label);
+	    }
 	    try {
 			scheduler().immediatelyOptimizeRecommender(optimizerName);
 		} catch (SchedulerException e) {
