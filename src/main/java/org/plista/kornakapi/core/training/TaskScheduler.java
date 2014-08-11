@@ -15,6 +15,7 @@
 
 package org.plista.kornakapi.core.training;
 
+import org.plista.kornakapi.core.optimizer.OptimizeRecommenderJob;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
 import org.quartz.JobBuilder;
@@ -32,7 +33,6 @@ import org.quartz.simpl.SimpleThreadPool;
 import org.quartz.spi.ThreadPool;
 
 import static org.quartz.TriggerBuilder.*;
-
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -127,6 +127,28 @@ public class TaskScheduler implements Closeable {
 			      .build();
 		  
 		  scheduler.scheduleJob(trigger); 
+	  }
+  }
+  
+  public void immediatelyOptimizeRecommender(String recommenderName) throws SchedulerException {
+	  if(!scheduler.checkExists(triggerkey(recommenderName))){
+		    JobDetail job = JobBuilder.newJob(OptimizeRecommenderJob.class)
+		            .withIdentity(key(recommenderName))
+		            .build();
+		    job.getJobDataMap().put(OptimizeRecommenderJob.RECOMMENDER_NAME_PARAM, recommenderName);
+			Trigger trigger = newTrigger()
+				      .withIdentity(triggerkey(recommenderName))
+				      .forJob(job)
+				      .startNow()           
+				      .build();
+		    
+
+		    try {
+		      scheduler.addJob(job, true);
+		      scheduler.scheduleJob(trigger);
+		    } catch (SchedulerException e) {
+		      throw new RuntimeException(e);
+		    }
 	  }
   }
 

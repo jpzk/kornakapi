@@ -20,6 +20,8 @@ import com.thoughtworks.xstream.XStream;
 
 import java.util.List;
 
+import org.plista.kornakapi.core.optimizer.FactorizationBasedInMemoryOptimizer;
+
 /** basic configuration object for the weblayer */
 public class Configuration {
 
@@ -39,6 +41,7 @@ public class Configuration {
   private List<ItembasedRecommenderConfig> itembasedRecommenders = Lists.newArrayList();
   private List<FactorizationbasedRecommenderConfig> factorizationbasedRecommenders = Lists.newArrayList();
   private List<StreamingKMeansClustererConfig> streamingKMeansClusterers = Lists.newArrayList();
+  private  FactorizationbasedOptimizerConfig factorizationbasedOptimizer = null;
 
   public static Configuration fromXML(String xml) {
     XStream serializer = new XStream();
@@ -46,6 +49,7 @@ public class Configuration {
     serializer.alias("itembasedRecommender", ItembasedRecommenderConfig.class);
     serializer.alias("factorizationbasedRecommender", FactorizationbasedRecommenderConfig.class);
     serializer.alias("streamingKMeansClusterer", StreamingKMeansClustererConfig.class);
+    serializer.alias("factorizationbasedOptimizer", FactorizationbasedOptimizerConfig.class);
 
     return (Configuration) serializer.fromXML(xml);
   }
@@ -53,7 +57,7 @@ public class Configuration {
   public String getModelDirectory() {
     return modelDirectory;
   }
-
+  
   public List<ItembasedRecommenderConfig> getItembasedRecommenders() {
     return itembasedRecommenders;
   }
@@ -76,6 +80,14 @@ public class Configuration {
 
   public void addFactorizationbasedRecommender(FactorizationbasedRecommenderConfig factorizationbasedRecommender) {
     factorizationbasedRecommenders.add(factorizationbasedRecommender);
+  }
+  
+  public void setFactorizationbasedOptimizer(FactorizationbasedOptimizerConfig factorizationbasedOptimizerConfig){
+	  this.factorizationbasedOptimizer = factorizationbasedOptimizerConfig;
+  }
+  
+  public FactorizationbasedOptimizerConfig getFactorizationbasedOptimizer(){
+	  return factorizationbasedOptimizer;
   }
 
   public void setModelDirectory(String modelDirectory) {

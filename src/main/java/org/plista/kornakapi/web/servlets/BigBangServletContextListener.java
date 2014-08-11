@@ -91,7 +91,6 @@ public class BigBangServletContextListener implements ServletContextListener {
 	      conf = Configuration.fromXML(Files.toString(configFile, Charsets.UTF_8));
 	
 	      Preconditions.checkState(conf.getNumProcessorsForTraining() > 0, "need at least one processor for training!");
-	      dataSource = new BasicDataSource();
 	      domainIndependetStorage = null;
 	      labels = null;
 	

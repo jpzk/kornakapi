@@ -62,12 +62,14 @@ import java.util.Set;
    item_id bigint(20) NOT NULL,
    PRIMARY KEY (label,item_id)
  );
+ 
+
 
  **/
 public class MySqlStorage implements Storage {
 
   protected final BasicDataSource dataSource;
-  private final JDBCDataModel dataModel;
+  protected JDBCDataModel dataModel;
   private int timeWindow;
 
   private static final String IMPORT_QUERY =
