@@ -29,7 +29,7 @@ public class FactorizationBasedInMemoryOptimizer extends AbstractOptimizer{
 	public void optimize(File modelDirectory, Configuration conf, int numProcessors,  String label)
 		throws IOException {
 			
-		int seed = 3;
+		int seed = 378934;
 		int fold = 2;
 		
 		// 1 Generate split
