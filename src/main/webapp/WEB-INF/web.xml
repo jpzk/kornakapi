@@ -11,6 +11,11 @@
     <servlet-name>BatchSetPreferences</servlet-name>
     <servlet-class>org.plista.kornakapi.web.servlets.BatchSetPreferencesServlet</servlet-class>
   </servlet>
+  
+   <servlet>
+    <servlet-name>Optimize</servlet-name>
+    <servlet-class>org.plista.kornakapi.web.servlets.OptimizeServlet</servlet-class>
+  </servlet>
 
   <servlet>
     <servlet-name>SetPreference</servlet-name>
@@ -55,6 +60,11 @@
   <servlet-mapping>
     <servlet-name>BatchSetPreferences</servlet-name>
     <url-pattern>/batchSetPreferences</url-pattern>
+  </servlet-mapping>
+  
+    <servlet-mapping>
+    <servlet-name>Optimize</servlet-name>
+    <url-pattern>/optimize</url-pattern>
   </servlet-mapping>
 
   <servlet-mapping>
