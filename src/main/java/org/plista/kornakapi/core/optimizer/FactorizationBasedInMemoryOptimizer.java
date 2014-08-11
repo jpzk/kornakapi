@@ -51,6 +51,8 @@ public class FactorizationBasedInMemoryOptimizer extends AbstractOptimizer{
 		ArrayList<Double> lambdas = new ArrayList<Double>(Arrays.asList(0.002, 0.001,0.003));
 		ArrayList<Integer> features = new ArrayList<Integer>(Arrays.asList(5, 7, 9,11, 13));
 		
+	    log.info("Starting Optimization");
+		
 		// 2 Loop over all hyperparameters
 		for(int feature : features){
 			for(double lambda : lambdas){

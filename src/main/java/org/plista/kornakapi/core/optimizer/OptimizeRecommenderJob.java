@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 
 public class OptimizeRecommenderJob implements Job{
 	
-	private static final Logger log = LoggerFactory.getLogger(FactorizationBasedInMemoryOptimizer.class);	
+	private static final Logger log = LoggerFactory.getLogger(OptimizeRecommenderJob.class);	
 	public static final String RECOMMENDER_NAME_PARAM = OptimizeRecommenderJob.class.getName() + ".optimizerName";
 
 	@Override

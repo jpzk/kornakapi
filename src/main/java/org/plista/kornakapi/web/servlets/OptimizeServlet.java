@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class OptimizeServlet extends BaseServlet{
-	private static final Logger log = LoggerFactory.getLogger(AddCandidateServlet.class);
+	private static final Logger log = LoggerFactory.getLogger(OptimizeServlet.class);
 
 	  @Override
 	  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
