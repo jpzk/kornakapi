@@ -113,7 +113,7 @@ public class FactorizationBasedInMemoryOptimizer extends AbstractOptimizer{
 						    	}
   
 						    }
-						    log.info("Error of {} for features {}, alpha {}, lambda {}, fold: {}", new Object[]{error, features, alpha, lambda, i});
+						    log.info("Error of {} for features {}, alpha {}, lambda {}, fold: {}", new Object[]{error, feature, alpha, lambda, i});
 						    
 						} catch (TasteException e) {
 							// TODO Auto-generated catch block
