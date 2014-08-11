@@ -71,7 +71,7 @@ public class FactorizationBasedInMemoryOptimizer extends AbstractOptimizer{
 						      if (log.isInfoEnabled()) {
 						    	  log.info("Model trained in {} ms", estimateDuration);
 						      }
-						      File targetFile = new File("/opt/kornakapi-optimizer/crossvalidation.model");
+						      File targetFile = new File("/opt/kornakapi-model/crossvalidation.model");
 						
 						      new FilePersistenceStrategy(targetFile).maybePersist(factorization);
 					    }catch (Exception e) {
