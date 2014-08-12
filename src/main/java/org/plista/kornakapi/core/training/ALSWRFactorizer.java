@@ -201,6 +201,7 @@ public class ALSWRFactorizer extends AbstractFactorizer {
                 public void run() { 
                 
                 Vector userFeatures = implicitFeedbackSolver.solve(sparseUserRatingVector(userPrefs));
+                userFeatures = userFeatures.divide(Math.sqrt(userFeatures.getLengthSquared()));
                 features.setFeatureColumnInU(userIndex(userID), userFeatures);
 
                 }
@@ -250,6 +251,7 @@ public class ALSWRFactorizer extends AbstractFactorizer {
           	            @Override
           	            public void run() {
           	            Vector itemFeatures = implicitFeedbackSolver.solve(sparseItemRatingVector(itemPrefs));
+          	            itemFeatures = itemFeatures.divide(Math.sqrt(itemFeatures.getLengthSquared()));
           	            features.setFeatureColumnInM(itemIndex(itemID), itemFeatures);
           	            }
           	          });
