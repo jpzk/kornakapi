@@ -50,6 +50,7 @@ public class FactorizationBasedInMemoryOptimizer extends AbstractOptimizer{
 		ArrayList<Double> alphas = new ArrayList<Double>(Arrays.asList(100.0,110.0, 120.0, 130.0, 140.0));
 		ArrayList<Double> lambdas = new ArrayList<Double>(Arrays.asList(0.000001, 0.00001,0.00005,0.000005));
 		ArrayList<Integer> features = new ArrayList<Integer>(Arrays.asList(5,4,3,2,1));
+		ArrayList<Integer> iterations = new ArrayList<Integer>(Arrays.asList(2,4,6,8,10,12,14,16,18,20));
 		
 	    log.info("Starting Optimization");
 		
@@ -58,69 +59,71 @@ public class FactorizationBasedInMemoryOptimizer extends AbstractOptimizer{
 			for(double lambda : lambdas){
 				for(double alpha : alphas){
 				    double error = 0;
-					for(int i = 0; i<3; i++){
-						Factorization factorization = null;
-					    try {
-						      ALSWRFactorizer factorizer = new ALSWRFactorizer(trainingSets.get(i), feature, lambda,
-						          5, true,alpha, numProcessors);
-						      
-						      long start = System.currentTimeMillis();
-						      factorization = factorizer.factorize();
-						      long estimateDuration = System.currentTimeMillis() - start;
-						      
-						      if (log.isInfoEnabled()) {
-						    	  log.info("Model trained in {} ms", estimateDuration);
-						      }
-						      File targetFile = new File("/opt/kornakapi-model/crossvalidation.model");
-						
-						      new FilePersistenceStrategy(targetFile).maybePersist(factorization);
-					    }catch (Exception e) {
-					      throw new IOException(e);
-					    }
-						// 3 measure performance
-					    LongPrimitiveIterator userIDsIterator;
-						try {
-							userIDsIterator = testSets.get(i).getUserIDs();
-				
-
-						    while (userIDsIterator.hasNext()) {
-						    	Long userID = userIDsIterator.next();
-						    	double[] userf = null;
-						    	PreferenceArray userPrefs = testSets.get(i).getPreferencesFromUser(userID);
-						    	try{
-						    		userf = factorization.getUserFeatures(userID);
-						    	} catch(TasteException e){
-						    		
-						    	}
-						    	if(userf != null){
-							    	long[] itemIDs = userPrefs.getIDs();
-							    	Vector userfVector = new DenseVector(userf);
-							    	int idx = 0;
-							    	for(long itemID: itemIDs ){
-							    		double[] itemf = null;
-							    		try{
-							    			itemf = factorization.getItemFeatures(itemID);
-							    		}catch(TasteException e){
-							    			
-							    		}
-							    		if(itemf != null){
-								    		Vector itemfVector = new DenseVector(itemf);
-								    		double pref = itemfVector.dot(userfVector);
-								    		double realpref = userPrefs.getValue(idx);
-								    		idx++;
-								    		error = error + Math.abs(pref - realpref); 
-							    		}
-   		  
-							    	}							    		
-						    	}
-  
+						for(int i = 0; i<3; i++){
+							for(int iter : iterations){
+							Factorization factorization = null;
+						    try {
+							      ALSWRFactorizer factorizer = new ALSWRFactorizer(trainingSets.get(i), feature, lambda,
+							    		  iter, true,alpha, numProcessors);
+							      
+							      long start = System.currentTimeMillis();
+							      factorization = factorizer.factorize();
+							      long estimateDuration = System.currentTimeMillis() - start;
+							      
+							      if (log.isInfoEnabled()) {
+							    	  log.info("Model trained in {} ms", estimateDuration);
+							      }
+							      File targetFile = new File("/opt/kornakapi-model/crossvalidation.model");
+							
+							      new FilePersistenceStrategy(targetFile).maybePersist(factorization);
+						    }catch (Exception e) {
+						      throw new IOException(e);
 						    }
-						    log.info("Error of {} for features {}, alpha {}, lambda {}, fold: {}", new Object[]{error, feature, alpha, lambda, i});
-						    
-						} catch (TasteException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}    
+							// 3 measure performance
+							    LongPrimitiveIterator userIDsIterator;
+								try {
+									userIDsIterator = testSets.get(i).getUserIDs();
+						
+		
+								    while (userIDsIterator.hasNext()) {
+								    	Long userID = userIDsIterator.next();
+								    	double[] userf = null;
+								    	PreferenceArray userPrefs = testSets.get(i).getPreferencesFromUser(userID);
+								    	try{
+								    		userf = factorization.getUserFeatures(userID);
+								    	} catch(TasteException e){
+								    		
+								    	}
+								    	if(userf != null){
+									    	long[] itemIDs = userPrefs.getIDs();
+									    	Vector userfVector = new DenseVector(userf);
+									    	int idx = 0;
+									    	for(long itemID: itemIDs ){
+									    		double[] itemf = null;
+									    		try{
+									    			itemf = factorization.getItemFeatures(itemID);
+									    		}catch(TasteException e){
+									    			
+									    		}
+									    		if(itemf != null){
+										    		Vector itemfVector = new DenseVector(itemf);
+										    		double pref = itemfVector.dot(userfVector);
+										    		double realpref = userPrefs.getValue(idx);
+										    		idx++;
+										    		error = error + Math.abs(pref - realpref); 
+									    		}
+		   		  
+									    	}							    		
+								    	}
+		  
+								    }
+								    log.info("Error of {} for features {}, alpha {}, lambda {}, fold: {}", new Object[]{error, feature, alpha, lambda, i});
+							    
+							} catch (TasteException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}    
+						}
 					}
 					data.insertPerformance(label, feature, 5, alpha, lambda, error);									
 				}
