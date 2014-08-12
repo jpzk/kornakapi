@@ -58,11 +58,11 @@ public class FactorizationBasedInMemoryOptimizer extends AbstractOptimizer{
 		for(int feature : features){
 			for(double lambda : lambdas){
 				for(double alpha : alphas){
-				    double error = 0;
-						for(int i = 0; i<3; i++){
-							for(int iter : iterations){
-							Factorization factorization = null;
-						    try {
+					for(int iter : iterations){
+						double error = 0;
+							for(int i = 0; i<3; i++){
+								Factorization factorization = null;
+								try {
 							      ALSWRFactorizer factorizer = new ALSWRFactorizer(trainingSets.get(i), feature, lambda,
 							    		  iter, true,alpha, numProcessors);
 							      
@@ -124,8 +124,8 @@ public class FactorizationBasedInMemoryOptimizer extends AbstractOptimizer{
 								e.printStackTrace();
 							}    
 						}
-					}
-					data.insertPerformance(label, feature, 5, alpha, lambda, error);									
+							data.insertPerformance(label, feature, iter, alpha, lambda, error);	
+					}							
 				}
 			}	
 		}
