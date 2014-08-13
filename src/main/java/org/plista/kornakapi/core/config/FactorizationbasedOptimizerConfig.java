@@ -1,7 +1,6 @@
 package org.plista.kornakapi.core.config;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -49,10 +48,14 @@ public class FactorizationbasedOptimizerConfig extends RecommenderConfig{
 				l.add(start);
 				start+=stepsize;
 			}
-		}else if(s.contains(",")){
-			String[] subs =StringUtils.split(s,",");
-			for(String subss : subs){
-				l.add(Double.parseDouble(subss));
+		}else {
+			if(s.contains(",")){
+				String[] subs =StringUtils.split(s,",");
+				for(String subss : subs){
+					l.add(Double.parseDouble(subss));
+				}
+			}else{
+				l.add(Double.parseDouble(s));
 			}
 		}	
 		return l;
@@ -72,10 +75,14 @@ public class FactorizationbasedOptimizerConfig extends RecommenderConfig{
 				l.add(start);
 				start+=stepsize;
 			}
-		}else if(s.contains(",")){
-			String[] subs =StringUtils.split(s,",");
-			for(String subss : subs){
-				l.add(Integer.parseInt(subss));
+		}else {
+			if(s.contains(",")){
+				String[] subs =StringUtils.split(s,",");
+				for(String subss : subs){
+					l.add(Integer.parseInt(subss));
+				}
+			}else{
+				l.add(Integer.parseInt(s));
 			}
 		}	
 		return l;

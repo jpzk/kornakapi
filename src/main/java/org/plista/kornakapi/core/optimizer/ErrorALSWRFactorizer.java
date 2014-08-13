@@ -15,13 +15,9 @@
  * limitations under the License.
  */
 
-package org.plista.kornakapi.core.training;
+package org.plista.kornakapi.core.optimizer;
 
 import com.google.common.collect.Lists;
-
-import org.apache.commons.math.linear.Array2DRowRealMatrix;
-import org.apache.commons.math.linear.LUDecompositionImpl;
-import org.apache.commons.math.linear.RealMatrix;
 import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.cf.taste.impl.common.FullRunningAverage;
 import org.apache.mahout.cf.taste.impl.common.LongPrimitiveIterator;
@@ -55,7 +51,7 @@ import java.util.concurrent.TimeUnit;
  *  also supports the implicit feedback variant of this approach as described in "Collaborative Filtering for Implicit
  *  Feedback Datasets" available at http://research.yahoo.com/pub/2433
  */
-public class ALSWRFactorizer extends AbstractFactorizer {
+public class ErrorALSWRFactorizer extends AbstractFactorizer {
 
   private final DataModel dataModel;
 
@@ -74,9 +70,9 @@ public class ALSWRFactorizer extends AbstractFactorizer {
 
   private static final double DEFAULT_ALPHA = 40;
 
-  private static final Logger log = LoggerFactory.getLogger(ALSWRFactorizer.class);
+  private static final Logger log = LoggerFactory.getLogger(ErrorALSWRFactorizer.class);
 
-  public ALSWRFactorizer(DataModel dataModel, int numFeatures, double lambda, int numIterations,
+  public ErrorALSWRFactorizer(DataModel dataModel, int numFeatures, double lambda, int numIterations,
       boolean usesImplicitFeedback, double alpha, int numTrainingThreads) throws TasteException {
     super(dataModel);
     this.dataModel = dataModel;
@@ -88,13 +84,13 @@ public class ALSWRFactorizer extends AbstractFactorizer {
     this.numTrainingThreads = numTrainingThreads;
   }
 
-  public ALSWRFactorizer(DataModel dataModel, int numFeatures, double lambda, int numIterations,
+  public ErrorALSWRFactorizer(DataModel dataModel, int numFeatures, double lambda, int numIterations,
                          boolean usesImplicitFeedback, double alpha) throws TasteException {
     this(dataModel, numFeatures, lambda, numIterations, usesImplicitFeedback, alpha,
         Runtime.getRuntime().availableProcessors());
   }
 
-  public ALSWRFactorizer(DataModel dataModel, int numFeatures, double lambda, int numIterations) throws TasteException {
+  public ErrorALSWRFactorizer(DataModel dataModel, int numFeatures, double lambda, int numIterations) throws TasteException {
     this(dataModel, numFeatures, lambda, numIterations, false, DEFAULT_ALPHA);
   }
 
@@ -106,7 +102,7 @@ public class ALSWRFactorizer extends AbstractFactorizer {
     private final double[][] M;
     private final double[][] U;
 
-    Features(ALSWRFactorizer factorizer) throws TasteException {
+    Features(ErrorALSWRFactorizer factorizer) throws TasteException {
       dataModel = factorizer.dataModel;
       numFeatures = factorizer.numFeatures;
       Random random = RandomUtils.getRandom();

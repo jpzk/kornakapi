@@ -3,7 +3,6 @@ package org.plista.kornakapi.core.optimizer;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.mahout.cf.taste.common.TasteException;
@@ -16,7 +15,6 @@ import org.apache.mahout.math.DenseVector;
 import org.apache.mahout.math.Vector;
 import org.plista.kornakapi.core.config.Configuration;
 import org.plista.kornakapi.core.storage.MySqlSplitableMaxPersistentStorage;
-import org.plista.kornakapi.core.training.ALSWRFactorizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +28,6 @@ public class FactorizationBasedInMemoryOptimizer extends AbstractOptimizer{
 		throws IOException {
 			
 		int seed = 378934;
-		int fold = 2;
 		
 		// 1 Generate split
 		
@@ -63,7 +60,7 @@ public class FactorizationBasedInMemoryOptimizer extends AbstractOptimizer{
 						for(int i = 0; i<3; i++){
 							Factorization factorization = null;
 							try {
-						      ALSWRFactorizer factorizer = new ALSWRFactorizer(trainingSets.get(i), feature, lambda,
+						      ErrorALSWRFactorizer factorizer = new ErrorALSWRFactorizer(trainingSets.get(i), feature, lambda,
 						    		  iter, true,alpha, numProcessors);
 						      
 						      long start = System.currentTimeMillis();
@@ -129,5 +126,6 @@ public class FactorizationBasedInMemoryOptimizer extends AbstractOptimizer{
 				}
 			}	
 		}
+		data.close();
 	}	
 }
