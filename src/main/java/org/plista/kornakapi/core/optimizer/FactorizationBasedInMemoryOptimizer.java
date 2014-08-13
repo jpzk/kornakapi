@@ -46,11 +46,11 @@ public class FactorizationBasedInMemoryOptimizer extends AbstractOptimizer{
 		testSets.add(data.testData(0));
 		testSets.add(data.testData(1));
 		testSets.add(data.testData(2));
-			
-		ArrayList<Double> alphas = new ArrayList<Double>(Arrays.asList(50.0,150.0,200.0, 250.0,300.0, 350.0, 400.0, 450.0, 500.0,600.0,700.0, 800.0));
-		ArrayList<Double> lambdas = new ArrayList<Double>(Arrays.asList(0.01,0.05,0.1,0.5,1.0,5.0,10.0,50.0,100.0,500.0,1000.0,5000.0,10000.0,50000.0,100000.0,500000.0,1000000.0));
-		ArrayList<Integer> features = new ArrayList<Integer>(Arrays.asList(1,5,10));
-		ArrayList<Integer> iterations = new ArrayList<Integer>(Arrays.asList(10));
+		
+		ArrayList<Double> alphas = conf.getFactorizationbasedOptimizer().getAlphaRange();
+		ArrayList<Double> lambdas = conf.getFactorizationbasedOptimizer().getLambdaRange();
+		ArrayList<Integer> features = conf.getFactorizationbasedOptimizer().getFeatureRange();
+		ArrayList<Integer> iterations = conf.getFactorizationbasedOptimizer().getIterationRange();
 		
 	    log.info("Starting Optimization");
 		
