@@ -6,7 +6,7 @@
 
   <groupId>com.plista.kornakapi</groupId>
   <artifactId>kornakapi</artifactId>
-  <version>1.0</version>
+  <version>1.1</version>
   <packaging>war</packaging>
 
   <repositories>
@@ -24,7 +24,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <org.springframework.version>3.1.2.RELEASE</org.springframework.version>
     <org.slf4j.version>1.6.1</org.slf4j.version>
-    <org.apache.mahout.version>0.8</org.apache.mahout.version>
+    <org.apache.mahout.version>0.9</org.apache.mahout.version>
     <tomcat.version>6.0.29</tomcat.version>
   </properties>
 
@@ -147,6 +147,12 @@
       <artifactId>mysql-connector-java</artifactId>
       <version>5.1.13</version>
     </dependency>
+    
+    <dependency>
+  		<groupId>commons-dbcp</groupId>
+  		<artifactId>commons-dbcp</artifactId>
+  		<version>1.4</version>
+	</dependency>
 
   </dependencies>
 
