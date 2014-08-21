@@ -14,6 +14,7 @@ import org.apache.mahout.cf.taste.model.PreferenceArray;
 import org.apache.mahout.math.DenseVector;
 import org.apache.mahout.math.Vector;
 import org.plista.kornakapi.core.config.Configuration;
+import org.plista.kornakapi.core.optimizer.ErrorALSWRFactorizer.ErrorFactorization;
 import org.plista.kornakapi.core.storage.MySqlSplitableMaxPersistentStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,11 +57,11 @@ public class FactorizationBasedInMemoryOptimizer extends AbstractOptimizer{
 			for(double lambda : lambdas){
 				for(double alpha : alphas){
 					for(int iter : iterations){
-						double error = 0;
+						double totalError = 0;
 						for(int i = 0; i<3; i++){
-							Factorization factorization = null;
+							ErrorFactorization factorization = null;
 							try {
-						      ErrorALSWRFactorizer factorizer = new ErrorALSWRFactorizer(trainingSets.get(i), feature, lambda,
+						      ErrorALSWRFactorizer factorizer = new ErrorALSWRFactorizer(trainingSets.get(i), testSets.get(i), feature, lambda,
 						    		  iter, true,alpha, numProcessors);
 						      
 						      long start = System.currentTimeMillis();
@@ -107,21 +108,25 @@ public class FactorizationBasedInMemoryOptimizer extends AbstractOptimizer{
 									    		double pref = itemfVector.dot(userfVector);
 									    		double realpref = userPrefs.getValue(idx);
 									    		idx++;
-									    		error = error + Math.abs(pref - realpref); 
+									    		totalError = totalError + Math.abs(pref - realpref); 
 								    		}
 	   		  
 								    	}							    		
 							    	}
 	  
 							    }
-							    log.info("Error of {} for features {}, alpha {}, lambda {}, fold: {}", new Object[]{error, feature, alpha, lambda, i});
+							    log.info("Error of {} for features {}, alpha {}, lambda {}, fold: {}", new Object[]{totalError, feature, alpha, lambda, i});
 						    
 						} catch (TasteException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
-						}    
 						}
-						data.insertPerformance(label, feature, iter, alpha, lambda, error);	
+						    for(int j = 0; j <factorization.getError().length; j++){
+						    	data.insertPerformance(label, feature, j, alpha, lambda, factorization.getError()[j]);
+						    }
+						    
+						}
+						data.insertPerformance(label, feature, -1, alpha, lambda, totalError);	
 					}							
 				}
 			}	

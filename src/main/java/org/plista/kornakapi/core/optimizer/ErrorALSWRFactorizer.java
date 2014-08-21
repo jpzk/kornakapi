@@ -18,7 +18,9 @@
 package org.plista.kornakapi.core.optimizer;
 
 import com.google.common.collect.Lists;
+
 import org.apache.mahout.cf.taste.common.TasteException;
+import org.apache.mahout.cf.taste.impl.common.FastByIDMap;
 import org.apache.mahout.cf.taste.impl.common.FullRunningAverage;
 import org.apache.mahout.cf.taste.impl.common.LongPrimitiveIterator;
 import org.apache.mahout.cf.taste.impl.common.RunningAverage;
@@ -54,6 +56,8 @@ import java.util.concurrent.TimeUnit;
 public class ErrorALSWRFactorizer extends AbstractFactorizer {
 
   private final DataModel dataModel;
+  
+  private final DataModel testModel;
 
   /** number of features used to compute this factorization */
   private final int numFeatures;
@@ -72,7 +76,7 @@ public class ErrorALSWRFactorizer extends AbstractFactorizer {
 
   private static final Logger log = LoggerFactory.getLogger(ErrorALSWRFactorizer.class);
 
-  public ErrorALSWRFactorizer(DataModel dataModel, int numFeatures, double lambda, int numIterations,
+  public ErrorALSWRFactorizer(DataModel dataModel, DataModel testModel, int numFeatures, double lambda, int numIterations,
       boolean usesImplicitFeedback, double alpha, int numTrainingThreads) throws TasteException {
     super(dataModel);
     this.dataModel = dataModel;
@@ -82,16 +86,17 @@ public class ErrorALSWRFactorizer extends AbstractFactorizer {
     this.usesImplicitFeedback = usesImplicitFeedback;
     this.alpha = alpha;
     this.numTrainingThreads = numTrainingThreads;
+    this.testModel = testModel;
   }
 
-  public ErrorALSWRFactorizer(DataModel dataModel, int numFeatures, double lambda, int numIterations,
+  public ErrorALSWRFactorizer(DataModel dataModel, DataModel testModel,int numFeatures, double lambda, int numIterations,
                          boolean usesImplicitFeedback, double alpha) throws TasteException {
-    this(dataModel, numFeatures, lambda, numIterations, usesImplicitFeedback, alpha,
+    this(dataModel,  testModel,numFeatures, lambda, numIterations, usesImplicitFeedback, alpha,
         Runtime.getRuntime().availableProcessors());
   }
 
-  public ErrorALSWRFactorizer(DataModel dataModel, int numFeatures, double lambda, int numIterations) throws TasteException {
-    this(dataModel, numFeatures, lambda, numIterations, false, DEFAULT_ALPHA);
+  public ErrorALSWRFactorizer(DataModel dataModel,DataModel testModel, int numFeatures, double lambda, int numIterations) throws TasteException {
+    this(dataModel,testModel,numFeatures, lambda, numIterations, false, DEFAULT_ALPHA);
   }
 
   static class Features {
@@ -160,7 +165,7 @@ public class ErrorALSWRFactorizer extends AbstractFactorizer {
   }
 
   @Override
-  public Factorization factorize() throws TasteException {
+  public ErrorFactorization factorize() throws TasteException {
     log.info("starting to compute the factorization...");
     final Features features = new Features(this);
 
@@ -173,7 +178,7 @@ public class ErrorALSWRFactorizer extends AbstractFactorizer {
       itemY = itemFeaturesMapping(dataModel.getItemIDs(), dataModel.getNumItems(), features.getM());
     }
 
-
+    Double[] errors = new Double[numIterations];
     for (int iteration = 0; iteration < numIterations; iteration++) {
 	  LongPrimitiveIterator userIDsIterator = dataModel.getUserIDs();
 	  LongPrimitiveIterator itemIDsIterator = dataModel.getItemIDs();
@@ -280,29 +285,29 @@ public class ErrorALSWRFactorizer extends AbstractFactorizer {
           log.warn("Error when computing item features", e);
         }
       }
-      if(log.isInfoEnabled()){
-    	  userIDsIterator = dataModel.getUserIDs();
-	      double error = 0;
-	      while (userIDsIterator.hasNext()) {
-	    	  Long userID = userIDsIterator.next();
-	    	  PreferenceArray userPrefs = dataModel.getPreferencesFromUser(userID);
-	    	  Vector userf = features.getUserFeatureColumn(userIndex(userID));
-	    	  long[] itemIDs = userPrefs.getIDs();
-	    	  int idx = 0;
-	    	  for(long itemID: itemIDs ){
-	    		  Vector itemf = features.getItemFeatureColumn(itemIndex(itemID));
-	    		  double pref = itemf.dot(userf);
-	    		  double realpref = userPrefs.getValue(idx);
-	    		  idx++;
-	    		  error = error + Math.abs(pref - realpref);    		  
-	    	  }	  
-	      }
-	      log.info("Error at iteration {} is: {}", iteration, error);
-      }    
+	  userIDsIterator = testModel.getUserIDs();
+      double error = 0;
+      while (userIDsIterator.hasNext()) {
+    	  Long userID = userIDsIterator.next();
+    	  PreferenceArray userPrefs = testModel.getPreferencesFromUser(userID);
+    	  Vector userf = features.getUserFeatureColumn(userIndex(userID));
+    	  long[] itemIDs = userPrefs.getIDs();
+    	  int idx = 0;
+    	  for(long itemID: itemIDs ){
+    		  Vector itemf = features.getItemFeatureColumn(itemIndex(itemID));
+    		  double pref = itemf.dot(userf);
+    		  double realpref = userPrefs.getValue(idx);
+    		  idx++;
+    		  error = error + Math.abs(pref - realpref);    		  
+    	  }	  
+      }
+      errors[iteration] = error;
+      
+  
     }
-
+    ErrorFactorization factorization = createErrorFactorization(features.getU(), features.getM(),errors);
     log.info("finished computation of the factorization...");
-    return createFactorization(features.getU(), features.getM());
+    return factorization;
   }
 
   protected ExecutorService createQueue() {
@@ -356,4 +361,40 @@ public class ErrorALSWRFactorizer extends AbstractFactorizer {
     }
     return ratings;
   }
+  
+  class ErrorFactorization extends Factorization{
+	  private Double[] errors;
+	  public ErrorFactorization(FastByIDMap<Integer> userIDMapping,
+			FastByIDMap<Integer> itemIDMapping, double[][] userFeatures,
+			double[][] itemFeatures, Double[] errors) {
+		super(userIDMapping, itemIDMapping, userFeatures, itemFeatures);
+		this.errors = errors;
+		// TODO Auto-generated constructor stub
+	}
+
+	  public Double[] getError(){
+		  return this.errors;
+	  }
+  }
+  protected ErrorFactorization createErrorFactorization(double[][] userFeatures, double[][] itemFeatures, Double[] errors) {
+	  FastByIDMap<Integer> userIDMapping = null;
+	  FastByIDMap<Integer> itemIDMapping = null;
+	try {
+		userIDMapping = createIDMapping(dataModel.getNumUsers(), dataModel.getUserIDs());
+		itemIDMapping = createIDMapping(dataModel.getNumItems(), dataModel.getItemIDs());
+	} catch (TasteException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+	  
+	    return new ErrorFactorization(userIDMapping, itemIDMapping, userFeatures, itemFeatures,errors);
+	  }
+  private static FastByIDMap<Integer> createIDMapping(int size, LongPrimitiveIterator idIterator) {
+	    FastByIDMap<Integer> mapping = new FastByIDMap<Integer>(size);
+	    int index = 0;
+	    while (idIterator.hasNext()) {
+	      mapping.put(idIterator.nextLong(), index++);
+	    }
+	    return mapping;
+	  }
 }

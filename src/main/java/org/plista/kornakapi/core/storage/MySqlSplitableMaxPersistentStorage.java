@@ -34,6 +34,8 @@ public class MySqlSplitableMaxPersistentStorage extends MySqlMaxPersistentStorag
 	  
 	  private static final String INSERT_PERFORMANCE ="INSERT INTO taste_optimization (label, features, iterations, alpha, lambda, error) VALUES (?, ?, ? , ?, ?, ?)";
 	  
+	  private static final String INSERT_TOTAL_PERFORMANCE ="UPDATE taste_optimization SET t_error = ? WHERE label = ? && features = ? && iterations = ? && alpha = ? && lambda= ? )";
+	  
 	  private static final Logger log = LoggerFactory.getLogger(MySqlSplitableMaxPersistentStorage.class);
 
 	public MySqlSplitableMaxPersistentStorage(StorageConfiguration storageConf,
@@ -80,6 +82,35 @@ public class MySqlSplitableMaxPersistentStorage extends MySqlMaxPersistentStorag
 		      stmt.setDouble(4, alpha);
 		      stmt.setDouble(5, lambda);
 		      stmt.setDouble(6, error);
+
+		      stmt.execute();
+
+		    } catch (SQLException e) {
+			    if (log.isInfoEnabled()) {
+			    	log.info(e.getMessage()); 			    			
+			    }else{
+			    	throw new IOException(e);
+			    }
+		      
+		    } finally {
+		      IOUtils.quietClose(stmt);
+		      IOUtils.quietClose(conn);
+		    }
+		  }
+	  public void insertTotalPerformance(String label, int  features, int iterations, double alpha, double lambda, double totalError) throws IOException {
+		    Connection conn = null;
+		    PreparedStatement stmt = null;
+
+		    try {
+		      conn = dataSource.getConnection();
+		      stmt = conn.prepareStatement(INSERT_PERFORMANCE);
+
+		      stmt.setString(1, label);
+		      stmt.setInt(2, features);
+		      stmt.setInt(3, iterations);
+		      stmt.setDouble(4, alpha);
+		      stmt.setDouble(5, lambda);
+		      stmt.setDouble(6, totalError);
 
 		      stmt.execute();
 
