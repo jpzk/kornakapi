@@ -30,7 +30,7 @@ CREATE TABLE taste_optimization(
 
 public class MySqlSplitableMaxPersistentStorage extends MySqlMaxPersistentStorage implements Storage{
 	
-	  protected final SplitableLabeledMySQLJDBCDataModel dataModel;
+	  //protected final SplitableLabeledMySQLJDBCDataModel dataModel;
 	  
 	  private static final String INSERT_PERFORMANCE ="INSERT INTO taste_optimization (label, features, iterations, alpha, lambda, error) VALUES (?, ?, ? , ?, ?, ?)";
 	  
@@ -54,7 +54,7 @@ public class MySqlSplitableMaxPersistentStorage extends MySqlMaxPersistentStorag
 	}  
 	  public DataModel trainingData(int split) throws IOException {
 	    try {
-	      return new GenericDataModel(dataModel.exportTrainSetWithPrefs(split));
+	      return new GenericDataModel(((SplitableLabeledMySQLJDBCDataModel) dataModel).exportTrainSetWithPrefs(split));
 	    } catch (TasteException e) {
 	      throw new IOException(e);
 	    }
@@ -62,7 +62,7 @@ public class MySqlSplitableMaxPersistentStorage extends MySqlMaxPersistentStorag
 	  
 	  public DataModel testData(int split) throws IOException{
 		    try {
-			      return new GenericDataModel(dataModel.exportTestSetWithPrefs(split));
+			      return new GenericDataModel(((SplitableLabeledMySQLJDBCDataModel) dataModel).exportTestSetWithPrefs(split));
 			    } catch (TasteException e) {
 			      throw new IOException(e);
 			    }

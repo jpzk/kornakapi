@@ -20,7 +20,7 @@ import com.thoughtworks.xstream.XStream;
 
 import java.util.List;
 
-import org.plista.kornakapi.core.optimizer.FactorizationBasedInMemoryOptimizer;
+
 
 /** basic configuration object for the weblayer */
 public class Configuration {
@@ -41,7 +41,8 @@ public class Configuration {
   private List<ItembasedRecommenderConfig> itembasedRecommenders = Lists.newArrayList();
   private List<FactorizationbasedRecommenderConfig> factorizationbasedRecommenders = Lists.newArrayList();
   private List<StreamingKMeansClustererConfig> streamingKMeansClusterers = Lists.newArrayList();
-  private  FactorizationbasedOptimizerConfig factorizationbasedOptimizer = null;
+  private FactorizationbasedOptimizerConfig factorizationbasedOptimizer = null;
+  private LDARecommenderConfig ldaRecommender= null;
 
   public static Configuration fromXML(String xml) {
     XStream serializer = new XStream();
@@ -50,6 +51,7 @@ public class Configuration {
     serializer.alias("factorizationbasedRecommender", FactorizationbasedRecommenderConfig.class);
     serializer.alias("streamingKMeansClusterer", StreamingKMeansClustererConfig.class);
     serializer.alias("factorizationbasedOptimizer", FactorizationbasedOptimizerConfig.class);
+    serializer.alias("ldaRecommender", LDARecommenderConfig.class);
 
     return (Configuration) serializer.fromXML(xml);
   }
@@ -89,6 +91,11 @@ public class Configuration {
   public FactorizationbasedOptimizerConfig getFactorizationbasedOptimizer(){
 	  return factorizationbasedOptimizer;
   }
+  
+  public void setLDARecommenderConfig(LDARecommenderConfig factorizationbasedOptimizerConfig){
+	  ldaRecommender = factorizationbasedOptimizerConfig;
+  }
+
 
   public void setModelDirectory(String modelDirectory) {
     this.modelDirectory = modelDirectory;
@@ -113,4 +120,8 @@ public class Configuration {
   public boolean getMaxPersistence(){
 	  return maxPersistence;
   }
+
+public RecommenderConfig getLDARecommender() {
+	return ldaRecommender;
+}
 }

@@ -8,6 +8,7 @@ import org.apache.mahout.cf.taste.impl.model.jdbc.AbstractJDBCDataModel;
 
 
 public class LabeledMySQLJDBCDataModel extends AbstractJDBCDataModel{
+
 	  
 	  /**
 	   * <p>
@@ -181,6 +182,63 @@ public class LabeledMySQLJDBCDataModel extends AbstractJDBCDataModel{
 	            + userIDColumn + ") WHERE tp1." + itemIDColumn + "=? and tp2." + itemIDColumn + "=?",
 	        "SELECT MAX(" + preferenceColumn + ") FROM " + preferenceTable,
 	        "SELECT MIN(" + preferenceColumn + ") FROM " + preferenceTable);
+	  }
+	  
+	  /**
+	   * <p>
+	   * Creates a  using the given {@link DataSource} and default table/column names.
+	   * </p>
+	   * 
+	   * @param dataSource
+	   *          {@link DataSource} to use
+	   * @param preferenceTable
+	   *          name of table containing preference data
+	   * @param userIDColumn
+	   *          user ID column name
+	   * @param itemIDColumn
+	   *          item ID column name
+	   * @param preferenceColumn
+	   *          preference column name
+	   * @param timestampColumn timestamp column name (may be null)
+	   */
+	  public LabeledMySQLJDBCDataModel(DataSource dataSource,
+	                            String preferenceTable,
+	                            String userIDColumn,
+	                            String itemIDColumn,
+	                            String preferenceColumn,
+	                            String timestampColumn,	    		
+	                            String getPreferenceSQL,
+	                            String getPreferenceTimeSQL,
+	                            String getUserSQL,
+	                            String getAllUsersSQL,
+	                            String getNumItemsSQL,
+	                            String getNumUsersSQL,
+	                            String setPreferenceSQL,
+	                            String removePreferenceSQL,
+	                            String getUsersSQL,
+	                            String getItemsSQL,
+	                            String getPrefsForItemSQL,
+	                            String getNumPreferenceForItemSQL,
+	                            String getNumPreferenceForItemsSQL,
+	                            String max,
+	                            String min) {
+		    super(dataSource, preferenceTable, userIDColumn, itemIDColumn, preferenceColumn,
+			        getPreferenceSQL,
+			        getPreferenceTimeSQL,
+			        getUserSQL,
+			        getAllUsersSQL,
+			        getNumItemsSQL,
+			        getNumUsersSQL,
+			        setPreferenceSQL,
+			        removePreferenceSQL,
+			        getUsersSQL,
+			        getItemsSQL,
+			        getPrefsForItemSQL,
+			        getNumPreferenceForItemSQL,
+			        getNumPreferenceForItemsSQL,
+			        max,
+			        min);
+			        
 	  }
 	  
 	  @Override

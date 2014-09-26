@@ -30,7 +30,7 @@ public class FFBRFactory {
 	        }
 
 	        CandidateItemsStrategy allUnknownItemsStrategy =
-	            new CachingAllUnknownItemsCandidateItemsStrategy(data);
+		            new CachingAllUnknownItemsCandidateItemsStrategy(data);
 
 	        FoldingFactorizationBasedRecommender svdRecommender = new FoldingFactorizationBasedRecommender(data,
 	            allUnknownItemsStrategy, persistence, factorizationbasedConf.getNumberOfThreadsForEstimation());
