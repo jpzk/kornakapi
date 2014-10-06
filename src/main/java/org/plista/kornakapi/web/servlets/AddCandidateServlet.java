@@ -14,8 +14,6 @@
  */
 
 package org.plista.kornakapi.web.servlets;
-
-import org.apache.mahout.cf.taste.common.TasteException;
 import org.plista.kornakapi.web.Parameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

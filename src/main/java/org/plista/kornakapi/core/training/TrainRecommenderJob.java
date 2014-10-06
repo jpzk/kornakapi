@@ -15,6 +15,8 @@
 
 package org.plista.kornakapi.core.training;
 
+import org.apache.mahout.cf.taste.recommender.Recommender;
+import org.plista.kornakapi.core.storage.CandidateCacheStorageDecorator;
 import org.plista.kornakapi.web.Components;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -44,6 +46,7 @@ public class TrainRecommenderJob implements Job {
 
     log.info("Training for recommender [{}] started.", recommenderName);
     try {
+   	
       trainer.train(new File(components.getConfiguration().getModelDirectory()), components.storages().get(label),
           components.recommender(recommenderName), components.getConfiguration().getNumProcessorsForTraining(), recommenderName);
     } catch (IOException e) {

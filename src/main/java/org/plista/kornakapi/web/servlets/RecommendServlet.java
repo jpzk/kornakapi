@@ -15,6 +15,7 @@
 
 package org.plista.kornakapi.web.servlets;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.mahout.cf.taste.common.NoSuchItemException;
 import org.apache.mahout.cf.taste.common.NoSuchUserException;
 import org.apache.mahout.cf.taste.common.TasteException;
@@ -22,8 +23,12 @@ import org.apache.mahout.cf.taste.impl.common.FastIDSet;
 import org.apache.mahout.cf.taste.recommender.IDRescorer;
 import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 import org.plista.kornakapi.KornakapiRecommender;
+import org.plista.kornakapi.core.config.LDARecommenderConfig;
 import org.plista.kornakapi.core.recommender.FixedCandidatesIDRescorer;
+import org.plista.kornakapi.core.storage.CandidateCacheStorageDecorator;
+import org.plista.kornakapi.core.training.DocumentTopicInferenceTrainer;
 import org.plista.kornakapi.web.Parameters;
+import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,6 +54,56 @@ public class RecommendServlet extends BaseServlet {
     IDRescorer rescorer = null;
 
 	String label = getParameter(request, Parameters.LABEL, false);
+	List<RecommendedItem> recommendedItems = null;
+	
+	if(getParameter(request, Parameters.RECOMMENDER, true).equals("lda")){
+		CandidateCacheStorageDecorator d = storages().get("0");
+		FastIDSet candidates = d.getCandidates(label);
+		rescorer = new FixedCandidatesIDRescorer(candidates);
+		String recommenderName = getParameter(request, Parameters.RECOMMENDER, true) + "_0";
+	    KornakapiRecommender recommender = recommender(recommenderName);
+	    long[] itemIDs = getParameterAsLongArray(request, Parameters.ITEM_IDS);
+	    try {
+			recommendedItems = recommender.recommendToAnonymous(itemIDs, howMany, rescorer);
+  
+	    
+	      PrintWriter writer = response.getWriter();
+
+	      response.setContentType("application/json");
+
+	      String separator = "";
+	      writer.write("[");
+	      for (RecommendedItem recommendedItem : recommendedItems) {
+	        writer.write(separator);
+	        writer.write("{\"itemID\":");
+	        writer.write(String.valueOf(recommendedItem.getItemID()));
+	        writer.write(",\"value\":");
+	        writer.write(String.valueOf(recommendedItem.getValue()));
+	        writer.write("}");
+	        separator = ",";
+	      }
+	      writer.write("]");
+	    } catch (NoSuchUserException e) {
+		    if (log.isInfoEnabled()) {
+		        log.info("Unkown User: {}", e.getMessage());
+		    }
+	    } catch (NoSuchItemException e) {
+		    if (log.isInfoEnabled()) {
+		        log.info("Unknown Item: {}", e.getMessage());
+		    }
+	    }catch (TasteException e) {
+		    if (log.isInfoEnabled()) {
+		        log.info("Unknown Item: {}", e.getMessage());
+		    }
+	        throw new ServletException(e);
+	      }
+	    
+	      if(recommendedItems== null){ // for lda
+	    	  String itemid = Long.toString(itemIDs[0]);
+	    	  topicInferenceForItem(label, itemid);
+	      }
+	    
+	}else{
 	String recommenderName = getParameter(request, Parameters.RECOMMENDER, true) + "_" + label;
     if(!containsTrainer(recommenderName)){
         if (log.isInfoEnabled()) {
@@ -66,14 +121,13 @@ public class RecommendServlet extends BaseServlet {
     
 
     KornakapiRecommender recommender = recommender(recommenderName);
-
+    long[] itemIDs = null;
     try {
-      List<RecommendedItem> recommendedItems;
 
       if (hasParameter(request, Parameters.USER_ID)) {
         long userID = getParameterAsLong(request, Parameters.USER_ID, false);
         long duration = 0;
-        long[] itemIDs = null;
+        itemIDs = null;
         if (hasParameter(request, Parameters.ITEM_IDS)) {
             itemIDs = getParameterAsLongArray(request, Parameters.ITEM_IDS);
         }
@@ -91,7 +145,7 @@ public class RecommendServlet extends BaseServlet {
           log.info("{} recommendations for user {} in {} ms", new Object[] { recommendedItems.size(), userID, duration });
         }
       } else if (hasParameter(request, Parameters.ITEM_IDS)) {
-        long[] itemIDs = getParameterAsLongArray(request, Parameters.ITEM_IDS);
+        itemIDs = getParameterAsLongArray(request, Parameters.ITEM_IDS);
 
         long start = System.currentTimeMillis();
         recommendedItems = recommender.recommendToAnonymous(itemIDs, howMany, rescorer);
@@ -104,6 +158,7 @@ public class RecommendServlet extends BaseServlet {
         throw new IllegalStateException("Parameter [" + Parameters.USER_ID + "] or [" + Parameters.ITEM_IDS + "] " +
             "must be supplied!");
       }
+
 
       PrintWriter writer = response.getWriter();
 
@@ -136,5 +191,29 @@ public class RecommendServlet extends BaseServlet {
 	    }
         throw new ServletException(e);
       }
+	}
+  }
+  /**
+   * 
+   * @param name
+   * @param itemid
+   */
+  private void topicInferenceForItem(String label, String itemid){
+	  String name = "lda_0";
+	  LDARecommenderConfig conf = (LDARecommenderConfig) this.getConfiguration().getLDARecommender();
+	  Path p = new Path(conf.getLDARecommenderModelPath());
+	  DocumentTopicInferenceTrainer trainer = new DocumentTopicInferenceTrainer(conf, p, itemid);
+	  this.setTrainer(name, trainer);
+      scheduler().addRecommenderTrainingJob(name);
+      try {
+		scheduler().immediatelyTrainRecommender(name);
+//		this.storages().get("0").addCandidate(label, Long.parseLong(itemid));
+	} catch (SchedulerException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	} catch (NumberFormatException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
   }
 }

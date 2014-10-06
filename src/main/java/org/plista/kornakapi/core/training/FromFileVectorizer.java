@@ -1,57 +1,48 @@
 package org.plista.kornakapi.core.training;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
-import org.apache.hadoop.conf.Configuration;
+
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.ToolRunner;
-import org.apache.mahout.cf.taste.model.DataModel;
-import org.apache.mahout.text.LuceneStorageConfiguration;
 import org.apache.mahout.text.SequenceFilesFromDirectory;
-import org.apache.mahout.utils.vectors.RowIdJob;
 import org.apache.mahout.vectorizer.SparseVectorsFromSequenceFiles;
 import org.plista.kornakapi.core.config.LDARecommenderConfig;
-import org.plista.kornakapi.core.config.RecommenderConfig;
+
 import com.google.common.collect.Lists;
 
-public class FromDirectoryVectorizer extends AbstractTrainer{
-	
-	private LuceneStorageConfiguration luceneStorageConf;
+/**
+ * 
+ *
+ */
+public class FromFileVectorizer {
+
+
 	private Path DocumentFilesPath;
 	private Path sequenceFilesPath;
 	private Path sparseVectorOut;
-	private Path sparseVectorInputPath;
 	/**
 	 * 
 	 * @param conf
 	 */
-	protected FromDirectoryVectorizer(RecommenderConfig conf) {
-		super(conf);
-		DocumentFilesPath = new Path(((LDARecommenderConfig)conf).getTextDirectoryPath());
-		sequenceFilesPath = new Path(((LDARecommenderConfig)conf).getVectorOutputPath());
-		sparseVectorOut= new Path(((LDARecommenderConfig)conf).getSparseVectorOutputPath());	
-		sparseVectorInputPath = new Path(((LDARecommenderConfig)conf).getCVBInputPath());
-		Configuration config = new Configuration();				
+	protected FromFileVectorizer(LDARecommenderConfig conf, String itemid) {
+
+		DocumentFilesPath = new Path(conf.getNewDocPath() + itemid);
+		sequenceFilesPath = new Path(conf.getInferencePath() + "seq");
+		sparseVectorOut= new Path(conf.getInferencePath() + "sparsein");	
+		
 
 	}
 
 	protected void doTrain() throws Exception {
 		generateSequneceFiles();
-        System.out.println("finished dir to seq job");
 		generateSparseVectors(true,true,3,sequenceFilesPath,sparseVectorOut);
-		ensureIntegerKeys(sparseVectorOut.suffix("/tf-vectors/part-r-00000"),sparseVectorInputPath);
 
 	}
-
-	@Override
-	protected void doTrain(File targetFile, DataModel inmemoryData,
-			int numProcessors) throws IOException {
-		// TODO Auto-generated method stub
-		
-	}
-	
-	private void generateSequneceFiles(){
+	/**
+	 * Generates SequenceFile
+	 * @throws Exception 
+	 */
+	private void generateSequneceFiles() throws Exception{
 		List<String> argList = Lists.newLinkedList();
         argList.add("-i");
         argList.add(DocumentFilesPath.toString());
@@ -59,12 +50,8 @@ public class FromDirectoryVectorizer extends AbstractTrainer{
         argList.add(sequenceFilesPath.toString());
         argList.add("-ow");
         String[] args = argList.toArray(new String[argList.size()]);
-        try {
-			ToolRunner.run(new SequenceFilesFromDirectory(), args);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+        ToolRunner.run(new SequenceFilesFromDirectory(), args);
+
 	}
 	/**
 	 * 
@@ -101,27 +88,4 @@ public class FromDirectoryVectorizer extends AbstractTrainer{
         ToolRunner.run(new SparseVectorsFromSequenceFiles(), args);
     }
     
-    /**
-     * 
-     * @param inputPath
-     * @param outputPath
-     */
-	private void ensureIntegerKeys(Path inputPath, Path outputPath){
-        List<String> argList = Lists.newLinkedList();
-        argList.add("-i");
-        argList.add(inputPath.toString());
-        argList.add("-o");
-        argList.add(outputPath.toString());
-        String[] args = argList.toArray(new String[argList.size()]);
-    	RowIdJob asd  = new RowIdJob();
-    	try {
-			asd.run(args);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    }
-
 }
-
-

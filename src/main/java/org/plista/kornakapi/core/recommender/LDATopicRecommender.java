@@ -3,12 +3,14 @@ package org.plista.kornakapi.core.recommender;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.mahout.cf.taste.common.NoSuchItemException;
 import org.apache.mahout.cf.taste.common.Refreshable;
 import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.cf.taste.impl.common.FastIDSet;
+import org.apache.mahout.cf.taste.impl.common.RefreshHelper;
 import org.apache.mahout.cf.taste.impl.model.BooleanUserPreferenceArray;
 import org.apache.mahout.cf.taste.impl.recommender.AbstractRecommender;
 import org.apache.mahout.cf.taste.impl.recommender.TopItems;
@@ -28,11 +30,12 @@ public class LDATopicRecommender extends AbstractRecommender implements Kornakap
 
 	private LDARecommenderConfig conf;
 	private SemanticModel model;
+	private final RefreshHelper refreshHelper;
 	
 	public LDATopicRecommender(DataModel dataModel,	CandidateItemsStrategy allUnknownItemsStrategy, LDARecommenderConfig conf) {
 		super(dataModel,allUnknownItemsStrategy );
 		this.conf = conf;
-		model = new SemanticModel(new Path(conf.getLDARecommenderModelPath()));
+		model = new SemanticModel(new Path(conf.getLDARecommenderModelPath()), conf);
 		try {
 			model.read();
 		} catch (IOException e) {
@@ -40,7 +43,18 @@ public class LDATopicRecommender extends AbstractRecommender implements Kornakap
 			e.printStackTrace();
 		}
 		
-	}
+		   refreshHelper = new RefreshHelper(new Callable<Object>() {
+			      @Override
+			      public Object call() throws TasteException, IOException {
+			        reloadModel();
+			        return null;
+			      }
+			    });
+		    refreshHelper.addDependency(getDataModel());
+		    refreshHelper.addDependency(allUnknownItemsStrategy);
+			  }
+		
+	
 
 	@Override
 	public List<RecommendedItem> recommendToAnonymous(long[] itemIDs,
@@ -48,7 +62,7 @@ public class LDATopicRecommender extends AbstractRecommender implements Kornakap
 		Long itemId = itemIDs[0];
 	    Vector itemFeature = model.getItemFeatures(itemId.toString());
 	    PreferenceArray preferences = asPreferences(itemIDs);
-	    FastIDSet possibleItemIDs = getAllOtherItems(Long.MIN_VALUE, preferences);
+	    FastIDSet possibleItemIDs =  getAllOtherItems(Long.MIN_VALUE, preferences);
 		List<RecommendedItem> topItems = TopItems.getTopItems(howMany, possibleItemIDs.iterator(), rescorer, new SemanticEstimator(itemFeature));
 		return topItems;
 	}
@@ -108,7 +122,10 @@ public class LDATopicRecommender extends AbstractRecommender implements Kornakap
 
 	@Override
 	public void refresh(Collection<Refreshable> alreadyRefreshed) {
-		// TODO Auto-generated method stub
-		
+		refreshHelper.refresh(alreadyRefreshed);
+	}
+	  
+	private void reloadModel() throws IOException{
+		model.read();
 	}
 }

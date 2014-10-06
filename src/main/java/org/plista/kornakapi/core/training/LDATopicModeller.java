@@ -3,13 +3,16 @@ package org.plista.kornakapi.core.training;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.hadoop.fs.Path;
+
 import org.apache.mahout.cf.taste.model.DataModel;
-import org.plista.kornakapi.core.config.LDARecommenderConfig;
+
 import org.plista.kornakapi.core.config.RecommenderConfig;
 
 
-
+/**
+ * Trainer to train a semantic model using lda
+ *
+ */
 public class LDATopicModeller extends AbstractTrainer{
 
 	
@@ -37,8 +40,6 @@ public class LDATopicModeller extends AbstractTrainer{
 			LDATopicFactorizer factorizer = new LDATopicFactorizer(conf);
 			SemanticModel semanticModel = factorizer.factorize();
 			semanticModel.safe();
-			semanticModel = new SemanticModel(new Path (((LDARecommenderConfig)conf).getLDARecommenderModelPath()));
-			semanticModel.read();
 
 		
 	}

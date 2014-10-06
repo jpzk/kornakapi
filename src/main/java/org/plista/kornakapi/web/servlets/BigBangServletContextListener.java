@@ -24,20 +24,26 @@ import com.google.common.io.Files;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.cf.taste.model.DataModel;
+import org.apache.mahout.cf.taste.recommender.CandidateItemsStrategy;
 import org.plista.kornakapi.KornakapiRecommender;
 import org.plista.kornakapi.core.config.RecommenderConfig;
+import org.plista.kornakapi.core.recommender.CachingAllUnknownItemsCandidateItemsStrategy;
 import org.plista.kornakapi.core.recommender.FoldingFactorizationBasedRecommender;
+import org.plista.kornakapi.core.recommender.LDATopicRecommender;
 import org.plista.kornakapi.core.config.Configuration;
 import org.plista.kornakapi.core.config.FactorizationbasedRecommenderConfig;
 import org.plista.kornakapi.core.config.ItembasedRecommenderConfig;
+import org.plista.kornakapi.core.config.LDARecommenderConfig;
 import org.plista.kornakapi.core.recommender.ItemSimilarityBasedRecommender;
 import org.plista.kornakapi.core.recommender.factory.FFBRFactory;
 import org.plista.kornakapi.core.recommender.factory.ISBRFactory;
 import org.plista.kornakapi.core.storage.CandidateCacheStorageDecorator;
 import org.plista.kornakapi.core.storage.MySqlMaxPersistentStorage;
 import org.plista.kornakapi.core.storage.MySqlStorage;
+import org.plista.kornakapi.core.storage.SemanticMySqlStorage;
 import org.plista.kornakapi.core.training.AbstractTrainer;
 import org.plista.kornakapi.core.training.FactorizationbasedInMemoryTrainer;
+import org.plista.kornakapi.core.training.LDATrainer;
 import org.plista.kornakapi.core.training.MultithreadedItembasedInMemoryTrainer;
 import org.plista.kornakapi.core.training.TaskScheduler;
 import org.plista.kornakapi.core.training.Trainer;
@@ -166,6 +172,22 @@ public class BigBangServletContextListener implements ServletContextListener {
     	  }
   
       }
+      log.info("Setup LDARecommender");
+      String label = "0";
+      LDARecommenderConfig ldaconf = (LDARecommenderConfig) conf.getLDARecommender();
+	  BasicDataSource dataSource = new BasicDataSource();
+	  CandidateCacheStorageDecorator dec =new CandidateCacheStorageDecorator(new SemanticMySqlStorage(conf.getStorageConfiguration(), label,dataSource)); 
+	  DataModel dmodel = dec.recommenderData();
+	  CandidateItemsStrategy allUnknownItemsStrategy =
+		           new CachingAllUnknownItemsCandidateItemsStrategy(dmodel);
+	  LDATopicRecommender recommender = new LDATopicRecommender(dmodel, allUnknownItemsStrategy , ldaconf);
+	  String name = "lda_" + label;
+	  putRecommender(recommender,  name);
+	  putTrainer(new LDATrainer(conf.getLDARecommender()), conf.getLDARecommender(), "lda_0", "doesNotMatter");
+      log.info("Created LDARecommender");
+      storages.put(label,  dec);
+	  
+	  
       
       /**
       log.info("Setup KluserRecommders");

@@ -13,9 +13,16 @@ import org.apache.hadoop.io.SequenceFile.Writer;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
 import org.apache.mahout.cf.taste.common.NoSuchItemException;
+import org.plista.kornakapi.core.config.LDARecommenderConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.io.Closeables;
 
+/**
+ * This class collects all relevant information for semantic similarity measure using lda
+ *
+ */
 public class SemanticModel{
 	private HashMap<Integer,String> indexItem;
 	private HashMap<String,Integer> itemIndex;
@@ -23,8 +30,15 @@ public class SemanticModel{
 	private Path path;
 	org.apache.hadoop.conf.Configuration lconf = new org.apache.hadoop.conf.Configuration(); 
 	FileSystem fs;
-	
-	public SemanticModel(HashMap<Integer,String> indexItem, HashMap<String,Integer> itemIndex, HashMap<String, Vector> itemFeatures, Path path){
+	  private static final Logger log = LoggerFactory.getLogger(SemanticModel.class);
+	/**
+	 * 
+	 * @param indexItem
+	 * @param itemIndex
+	 * @param itemFeatures
+	 * @param path
+	 */
+	public SemanticModel(HashMap<Integer,String> indexItem, HashMap<String,Integer> itemIndex, HashMap<String, Vector> itemFeatures, Path path, LDARecommenderConfig conf){
 		this.indexItem = indexItem;
 		this.itemIndex = itemIndex;
 		this.itemFeatures = itemFeatures;
@@ -36,7 +50,11 @@ public class SemanticModel{
 			e.printStackTrace();
 		}
 	}
-	public SemanticModel(Path path){
+	/**
+	 * 
+	 * @param path
+	 */
+	public SemanticModel(Path path, LDARecommenderConfig conf){
 		this.path = path;
 		try {
 			fs = FileSystem.get(lconf);
@@ -46,26 +64,54 @@ public class SemanticModel{
 		}
 	}
 	
+	/**
+	 * 
+	 * @return
+	 */
 	public HashMap<Integer,String> getIndexItem(){
 		return indexItem;
 	}
+	/**
+	 * 
+	 * @return
+	 */
 	public HashMap<String,Integer> getItemIndex(){
 		return itemIndex;
 	}
+	/**
+	 * 
+	 * @param itemid
+	 * @return
+	 */
 	public Integer getItemIndex(String itemid){
 		return itemIndex.get(itemid);
 	}
+	/**
+	 * 
+	 * @return
+	 */
 	public  HashMap<String, Vector> getItemFeatures(){
 		return itemFeatures;
 	}
+	
+	/**
+	 * 
+	 * @param itemid
+	 * @return
+	 * @throws NoSuchItemException
+	 */
 	public Vector getItemFeatures(String itemid) throws NoSuchItemException{
 		if(itemFeatures.containsKey(itemid)){
 			return itemFeatures.get(itemid);
-		} else{
-			throw new NoSuchItemException("Itemid doesn't not exist");
 		}
+		throw new NoSuchItemException("Item does not exist!");		
 	}
-	
+
+
+/**
+ * Method to safe the model
+ * @throws IOException
+ */
 	public void safe() throws IOException{
 		if(itemFeatures !=null){
 			Path model = path.suffix("/itemFeature.model");
@@ -103,7 +149,15 @@ public class SemanticModel{
 			}
 			Closeables.close(w, false);
 		}
+		if(log.isInfoEnabled()){
+			log.info("LDA Model Safed");
+}
 	}
+	
+	/**
+	 * method to load model from squence file
+	 * @throws IOException
+	 */
 	public void read() throws IOException{
 		Path indexPath = path.suffix("/indexItem.model");
 		if(fs.exists(indexPath)){
@@ -140,5 +194,9 @@ public class SemanticModel{
 			}
 			Closeables.close(reader, false);
 		}
+		if(log.isInfoEnabled()){
+					log.info("LDA Model Read");
+		}
+
 	}
 }

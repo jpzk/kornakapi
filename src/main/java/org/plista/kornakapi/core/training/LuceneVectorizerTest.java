@@ -56,40 +56,7 @@ public class LuceneVectorizerTest {
 		printLocalDocumentTopicDistribution(rconf,((LDARecommenderConfig)rconf).getLDADocTopicsPath(),((LDARecommenderConfig)rconf).getLDADocTopicsPath());
 		
 		
-        //Get the new document dictionary file
-        ArrayList<String> newDocDictionaryWords = new ArrayList<String>();
-        org.apache.hadoop.conf.Configuration lconf = new org.apache.hadoop.conf.Configuration(); 
-        FileSystem fs = FileSystem.get(lconf);
-        Reader reader = new SequenceFile.Reader(fs,new Path(((LDARecommenderConfig)rconf).getTopicsDictionaryPath()) , lconf);
-        Text keyNewDict = new Text();
-        IntWritable newVal = new IntWritable();
-        while(reader.next(keyNewDict,newVal)){
-            System.out.println("Key: "+keyNewDict.toString()+" Val: "+newVal);
-            newDocDictionaryWords.add(keyNewDict.toString());
-        }
-		
 
-		TopicModel model = new TopicModel(lconf, 0.1, 0.1, newDocDictionaryWords.toArray(new String[newDocDictionaryWords.size()]), 1, 1f, 
-				new Path(((LDARecommenderConfig)rconf).getTopicsOutputPath())); 
-		 Vector docTopics = new DenseVector(new double[model.getNumTopics()]).assign(1.0/model.getNumTopics());
-		 Vector newDocVector = new DenseVector(10);
-		 newDocVector.set(0, 2.5);
-		 newDocVector.set(1, 1.5);
-		 newDocVector.set(2, 12.5);
-		 newDocVector.set(3, 4.5);
-		 newDocVector.set(4, 0);
-		 newDocVector.set(5, 2.5);
-		 newDocVector.set(6, 1.5);
-		 newDocVector.set(7, 12.5);
-		 newDocVector.set(8, 4.5);
-		 newDocVector.set(9, 0);
-		 Matrix docTopicModel = new SparseRowMatrix(model.getNumTopics(), newDocVector.size());
-		 
-		 int maxIters = 100;
-	        for(int i = 0; i < maxIters; i++) {
-	            model.trainDocTopicModel(newDocVector, docTopics, docTopicModel);
-	        }
-	     model.stop();
 	     BasicDataSource dataSource = new BasicDataSource();
 	     String label = "123235";
 	     CandidateCacheStorageDecorator dec =new CandidateCacheStorageDecorator(new SemanticMySqlStorage(conf.getStorageConfiguration(), label,dataSource)); 
@@ -99,12 +66,23 @@ public class LuceneVectorizerTest {
 	     LDATopicRecommender recommender = new LDATopicRecommender(dmodel, allUnknownItemsStrategy , (LDARecommenderConfig)rconf);
 	 	 FastIDSet candidates = dec.getCandidates(label);
 		 FixedCandidatesIDRescorer rescorer = new FixedCandidatesIDRescorer(candidates);
-		
 		 long[] itemIDs = new long[1];
-		 itemIDs[0]= 6;
-		 List<RecommendedItem> items = recommender.recommendToAnonymous(itemIDs, 12, rescorer);
-	     System.out.print(items);
-
+		 itemIDs[0]= 9;
+		 List<RecommendedItem> items1 = recommender.recommendToAnonymous(itemIDs, 12, rescorer);
+	     System.out.print(items1);
+	     
+		 itemIDs = new long[1];
+		 itemIDs[0]= 10;
+		 List<RecommendedItem> items2 = recommender.recommendToAnonymous(itemIDs, 12, rescorer);
+	     System.out.print(items1);
+	     System.out.print("\n");
+	     System.out.print(items2);
+	     
+	     itemIDs = new long[1];
+		 itemIDs[0]= 10;
+		 List<RecommendedItem> items3 = recommender.recommendToAnonymous(itemIDs, 12, rescorer);
+	     System.out.print("\n");
+	     System.out.print(items3);
 
 	}
 	
