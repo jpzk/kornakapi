@@ -45,6 +45,7 @@ public class TrainServlet extends BaseServlet {
 		}
     }
 	try {
+		scheduler().addRecommenderTrainingJob(recommenderName);
 		scheduler().immediatelyTrainRecommender(recommenderName);
 	} catch (SchedulerException e) {
 		e.printStackTrace();
