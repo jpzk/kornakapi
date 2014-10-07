@@ -12,7 +12,7 @@ import org.plista.kornakapi.core.storage.MySqlMaxPersistentStorage;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 
-public class ExtractTest {
+public class ClustererTest {
 	
 	public static void main(String [] args) throws IOException{
 		/**

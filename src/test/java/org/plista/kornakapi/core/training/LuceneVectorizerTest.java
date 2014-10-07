@@ -1,27 +1,31 @@
+/**
+ * Copyright 2012 plista GmbH  (http://www.plista.com/)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and limitations under the License.
+ */
+
+
 package org.plista.kornakapi.core.training;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 
 import org.apache.commons.dbcp.BasicDataSource;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.SequenceFile;
-import org.apache.hadoop.io.SequenceFile.Reader;
-import org.apache.hadoop.io.Text;
 import org.apache.mahout.cf.taste.impl.common.FastIDSet;
 import org.apache.mahout.cf.taste.model.DataModel;
 import org.apache.mahout.cf.taste.recommender.CandidateItemsStrategy;
 import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 import org.apache.mahout.clustering.lda.LDAPrintTopics;
-import org.apache.mahout.clustering.lda.cvb.TopicModel;
-import org.apache.mahout.math.DenseVector;
-import org.apache.mahout.math.Matrix;
-import org.apache.mahout.math.SparseRowMatrix;
-import org.apache.mahout.math.Vector;
 import org.apache.mahout.utils.vectors.VectorDumper;
 import org.plista.kornakapi.core.config.Configuration;
 import org.plista.kornakapi.core.config.LDARecommenderConfig;
@@ -37,8 +41,7 @@ import com.google.common.collect.Lists;
 import com.google.common.io.Files;
 
 public class LuceneVectorizerTest {
-	
-	
+		
 	public static void main(String [] arg) throws Exception{
 		String path = "kornakapi.conf";
 		File configFile = new File(path);
@@ -83,6 +86,7 @@ public class LuceneVectorizerTest {
 		 List<RecommendedItem> items3 = recommender.recommendToAnonymous(itemIDs, 12, rescorer);
 	     System.out.print("\n");
 	     System.out.print(items3);
+	     dec.close();
 
 	}
 	

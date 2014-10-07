@@ -27,6 +27,7 @@ public class Parameters {
   public static final String FILE = "file";
   public static final String BATCH_SIZE = "batchSize";
   public static final String LABEL = "label";
+  public static final String Text = "text";
 
   public static final int DEFAULT_HOW_MANY = 10;
   public static final int DEFAULT_BATCH_SIZE = 10000;
