@@ -38,16 +38,18 @@ public class FromDirectoryVectorizer extends AbstractTrainer{
 	private Path sequenceFilesPath;
 	private Path sparseVectorOut;
 	private Path sparseVectorInputPath;
+	private LDARecommenderConfig conf;
 	/**
 	 * 
 	 * @param conf
 	 */
 	protected FromDirectoryVectorizer(RecommenderConfig conf) {
 		super(conf);
-		DocumentFilesPath = new Path(((LDARecommenderConfig)conf).getTextDirectoryPath());
-		sequenceFilesPath = new Path(((LDARecommenderConfig)conf).getVectorOutputPath());
-		sparseVectorOut= new Path(((LDARecommenderConfig)conf).getSparseVectorOutputPath());	
-		sparseVectorInputPath = new Path(((LDARecommenderConfig)conf).getCVBInputPath());
+		this.conf = (LDARecommenderConfig)conf;
+		DocumentFilesPath = new Path(this.conf.getTextDirectoryPath());
+		sequenceFilesPath = new Path(this.conf.getVectorOutputPath());
+		sparseVectorOut= new Path(this.conf.getSparseVectorOutputPath());	
+		sparseVectorInputPath = new Path(this.conf.getCVBInputPath());
 		Configuration config = new Configuration();				
 
 	}
@@ -55,7 +57,7 @@ public class FromDirectoryVectorizer extends AbstractTrainer{
 	protected void doTrain() throws Exception {
 		generateSequneceFiles();
         System.out.println("finished dir to seq job");
-		generateSparseVectors(true,true,3,sequenceFilesPath,sparseVectorOut);
+		generateSparseVectors(true,true,this.conf.getMaxDFSigma(),sequenceFilesPath,sparseVectorOut);
 		ensureIntegerKeys(sparseVectorOut.suffix("/tf-vectors/part-r-00000"),sparseVectorInputPath);
 
 	}

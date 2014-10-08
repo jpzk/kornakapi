@@ -10,6 +10,7 @@ public class LDARecommenderConfig extends RecommenderConfig{
 	private double etha;
 	private int trainingThreats;
 	private int inferenceThreats;
+	private double maxTermVariance;
 	
 	public String getLuceneIndexPath(){
 		return luceneIndexPath;
@@ -69,6 +70,9 @@ public class LDARecommenderConfig extends RecommenderConfig{
 	}
 	public int getInferenceThreats(){
 		return inferenceThreats;
+	}
+	public double getMaxDFSigma(){
+		return maxTermVariance;
 	}
 
 }

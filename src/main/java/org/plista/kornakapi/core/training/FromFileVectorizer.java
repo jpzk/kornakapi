@@ -36,6 +36,7 @@ public class FromFileVectorizer {
 	private Path DocumentFilesPath;
 	private Path sequenceFilesPath;
 	private Path sparseVectorOut;
+	private LDARecommenderConfig conf;
 	/**
 	 * 
 	 * @param conf
@@ -44,14 +45,15 @@ public class FromFileVectorizer {
 
 		DocumentFilesPath = new Path(conf.getNewDocPath() + itemid);
 		sequenceFilesPath = new Path(conf.getInferencePath() + "seq");
-		sparseVectorOut= new Path(conf.getInferencePath() + "sparsein");	
+		sparseVectorOut= new Path(conf.getInferencePath() + "sparsein");
+		this.conf = conf;
 		
 
 	}
 
 	protected void doTrain() throws Exception {
 		generateSequneceFiles();
-		generateSparseVectors(true,true,3,sequenceFilesPath,sparseVectorOut);
+		generateSparseVectors(true,true,this.conf.getMaxDFSigma(),sequenceFilesPath,sparseVectorOut);
 
 	}
 	/**
