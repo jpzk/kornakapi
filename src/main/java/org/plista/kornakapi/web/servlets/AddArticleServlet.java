@@ -43,7 +43,7 @@ public class AddArticleServlet extends BaseServlet {
     	itemID = this.idRemapping(itemID);
     }
     try{
-    	this.storages().get(label).addCandidate(label, itemID);
+    	this.storages().get("0").addCandidate(label, itemID);
     	String path = ((LDARecommenderConfig) this.getConfiguration().getLDARecommender()).getTextDirectoryPath() + Long.toString(itemID);
     	File f = new File(path);
     	if(!f.exists()){
