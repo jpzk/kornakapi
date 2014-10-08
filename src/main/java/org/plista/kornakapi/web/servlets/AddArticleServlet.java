@@ -14,8 +14,11 @@
  */
 
 package org.plista.kornakapi.web.servlets;
+import org.apache.hadoop.fs.Path;
 import org.plista.kornakapi.core.config.LDARecommenderConfig;
+import org.plista.kornakapi.core.training.DocumentTopicInferenceTrainer;
 import org.plista.kornakapi.web.Parameters;
+import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +46,7 @@ public class AddArticleServlet extends BaseServlet {
     	itemID = this.idRemapping(itemID);
     }
     try{
-    	this.storages().get("0").addCandidate(label, itemID);
+    	this.storages().get("lda").addCandidate(label, itemID);
     	String path = ((LDARecommenderConfig) this.getConfiguration().getLDARecommender()).getTextDirectoryPath() + Long.toString(itemID);
     	File f = new File(path);
     	if(!f.exists()){
@@ -52,11 +55,34 @@ public class AddArticleServlet extends BaseServlet {
             output.write(text);
             output.close();
     	}
-    	   	
+    	topicInferenceForItem(label, Long.toString(itemID));	
     } catch(NullPointerException e){
 	  if(log.isInfoEnabled()){
 		  log.info("No Recommender found for label {} and itemID {}", label, itemID );
 	  }
     }
+  }
+  /**
+   * 
+   * @param name
+   * @param itemid
+   */
+  private void topicInferenceForItem(String label, String itemid){
+	  String name = "lda";
+	  LDARecommenderConfig conf = (LDARecommenderConfig) this.getConfiguration().getLDARecommender();
+	  Path p = new Path(conf.getLDARecommenderModelPath());
+	  DocumentTopicInferenceTrainer trainer = new DocumentTopicInferenceTrainer(conf, p, itemid);
+	  this.setTrainer(name, trainer);
+      scheduler().addRecommenderTrainingJob(name);
+      try {
+		scheduler().immediatelyTrainRecommender(name);
+//		this.storages().get("0").addCandidate(label, Long.parseLong(itemid));
+	} catch (SchedulerException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	} catch (NumberFormatException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
   }
 }

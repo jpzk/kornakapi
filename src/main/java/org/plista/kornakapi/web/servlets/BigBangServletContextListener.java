@@ -173,19 +173,18 @@ public class BigBangServletContextListener implements ServletContextListener {
   
       }
       log.info("Setup LDARecommender");
-      String label = "0";
+      String name = "lda";
       LDARecommenderConfig ldaconf = (LDARecommenderConfig) conf.getLDARecommender();
 	  BasicDataSource dataSource = new BasicDataSource();
-	  CandidateCacheStorageDecorator dec =new CandidateCacheStorageDecorator(new SemanticMySqlStorage(conf.getStorageConfiguration(), label,dataSource)); 
+	  CandidateCacheStorageDecorator dec =new CandidateCacheStorageDecorator(new SemanticMySqlStorage(conf.getStorageConfiguration(), name,dataSource)); 
 	  DataModel dmodel = dec.recommenderData();
 	  CandidateItemsStrategy allUnknownItemsStrategy =
 		           new CachingAllUnknownItemsCandidateItemsStrategy(dmodel);
 	  LDATopicRecommender recommender = new LDATopicRecommender(dmodel, allUnknownItemsStrategy , ldaconf);
-	  String name = "lda_" + label;
 	  putRecommender(recommender,  name);
-	  putTrainer(new LDATrainer(conf.getLDARecommender()), conf.getLDARecommender(), "lda_0", "doesNotMatter");
+	  putTrainer(new LDATrainer(conf.getLDARecommender()), conf.getLDARecommender(), name, "doesNotMatter");
       log.info("Created LDARecommender");
-      storages.put(label,  dec);
+      storages.put(name,  dec);
 	  
 	  
       

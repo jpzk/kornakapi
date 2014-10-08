@@ -57,10 +57,10 @@ public class RecommendServlet extends BaseServlet {
 	List<RecommendedItem> recommendedItems = null;
 	
 	if(getParameter(request, Parameters.RECOMMENDER, true).equals("lda")){
-		CandidateCacheStorageDecorator d = storages().get("0");
+		CandidateCacheStorageDecorator d = storages().get("lda");
 		FastIDSet candidates = d.getCandidates(label);
 		rescorer = new FixedCandidatesIDRescorer(candidates);
-		String recommenderName = getParameter(request, Parameters.RECOMMENDER, true) + "_0";
+		String recommenderName = getParameter(request, Parameters.RECOMMENDER, true);
 	    KornakapiRecommender recommender = recommender(recommenderName);
 	    long[] itemIDs = getParameterAsLongArray(request, Parameters.ITEM_IDS);
 	    try {
@@ -97,11 +97,7 @@ public class RecommendServlet extends BaseServlet {
 		    }
 	        throw new ServletException(e);
 	      }
-	    
-	      if(recommendedItems== null){ // for lda
-	    	  String itemid = Long.toString(itemIDs[0]);
-	    	  topicInferenceForItem(label, itemid);
-	      }
+	   
 	    
 	}else{
 	String recommenderName = getParameter(request, Parameters.RECOMMENDER, true) + "_" + label;
@@ -199,7 +195,7 @@ public class RecommendServlet extends BaseServlet {
    * @param itemid
    */
   private void topicInferenceForItem(String label, String itemid){
-	  String name = "lda_0";
+	  String name = "lda";
 	  LDARecommenderConfig conf = (LDARecommenderConfig) this.getConfiguration().getLDARecommender();
 	  Path p = new Path(conf.getLDARecommenderModelPath());
 	  DocumentTopicInferenceTrainer trainer = new DocumentTopicInferenceTrainer(conf, p, itemid);

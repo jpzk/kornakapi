@@ -36,6 +36,9 @@ public class TrainServlet extends BaseServlet {
 
 	String label = getParameter(request, Parameters.LABEL, true);
     String recommenderName = getParameter(request, Parameters.RECOMMENDER, true)+"_"+ label;
+    if(getParameter(request, Parameters.RECOMMENDER, true).equals("lda")){
+    	recommenderName = "lda";
+    }
     if(!containsTrainer(recommenderName)){
     	try {
 			createRecommenderForLabel(label);
