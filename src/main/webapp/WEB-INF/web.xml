@@ -31,6 +31,11 @@
     <servlet-name>Recommend</servlet-name>
     <servlet-class>org.plista.kornakapi.web.servlets.RecommendServlet</servlet-class>
   </servlet>
+  
+   <servlet>
+    <servlet-name>AddArticle</servlet-name>
+    <servlet-class>org.plista.kornakapi.web.servlets.AddArticleServlet</servlet-class>
+  </servlet>
 
   <servlet>
     <servlet-name>AddCandidate</servlet-name>
@@ -62,9 +67,14 @@
     <url-pattern>/batchSetPreferences</url-pattern>
   </servlet-mapping>
   
-    <servlet-mapping>
+  <servlet-mapping>
     <servlet-name>Optimize</servlet-name>
     <url-pattern>/optimize</url-pattern>
+  </servlet-mapping>
+  
+  <servlet-mapping>
+    <servlet-name>AddArticle</servlet-name>
+    <url-pattern>/addArticle</url-pattern>
   </servlet-mapping>
 
   <servlet-mapping>
