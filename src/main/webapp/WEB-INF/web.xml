@@ -46,6 +46,11 @@
     <servlet-name>BatchAddCandidates</servlet-name>
     <servlet-class>org.plista.kornakapi.web.servlets.BatchAddCandidatesServlet</servlet-class>
   </servlet>
+  
+  <servlet>
+    <servlet-name>DeleteArticle</servlet-name>
+    <servlet-class>org.plista.kornakapi.web.servlets.DeleteArticleServlet</servlet-class>
+  </servlet>
 
   <servlet>
     <servlet-name>DeleteCandidate</servlet-name>
@@ -105,6 +110,11 @@
   <servlet-mapping>
     <servlet-name>DeleteCandidate</servlet-name>
     <url-pattern>/deleteCandidate</url-pattern>
+  </servlet-mapping>
+  
+  <servlet-mapping>
+  	<servlet-name>DeleteArticle</servlet-name>
+  	<url-pattern>/deleteArticle</url-pattern>
   </servlet-mapping>
 
   <servlet-mapping>
