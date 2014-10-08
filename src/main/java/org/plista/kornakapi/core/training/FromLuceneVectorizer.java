@@ -16,8 +16,7 @@
 
 package org.plista.kornakapi.core.training;
 
-import java.io.File;
-import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -25,7 +24,6 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.ToolRunner;
-import org.apache.mahout.cf.taste.model.DataModel;
 import org.apache.mahout.text.LuceneStorageConfiguration;
 import org.apache.mahout.text.SequenceFilesFromLuceneStorage;
 import org.apache.mahout.utils.vectors.RowIdJob;
@@ -35,7 +33,7 @@ import org.plista.kornakapi.core.config.RecommenderConfig;
 
 import com.google.common.collect.Lists;
 
-public class FromLuceneVectorizer extends AbstractTrainer{
+public class FromLuceneVectorizer{
 	
 	private LuceneStorageConfiguration luceneStorageConf;
 	private Path indexFilesPath;
@@ -47,7 +45,6 @@ public class FromLuceneVectorizer extends AbstractTrainer{
 	 * @param conf
 	 */
 	protected FromLuceneVectorizer(RecommenderConfig conf) {
-		super(conf);
 		indexFilesPath = new Path(((LDARecommenderConfig)conf).getLuceneIndexPath());
 		ArrayList<Path> idxs = new ArrayList<Path>();
 		idxs.add(indexFilesPath);
@@ -70,12 +67,6 @@ public class FromLuceneVectorizer extends AbstractTrainer{
 
 	}
 
-	@Override
-	protected void doTrain(File targetFile, DataModel inmemoryData,
-			int numProcessors) throws IOException {
-		// TODO Auto-generated method stub
-		
-	}
 	/**
 	 * 
 	 * @param tfWeighting, either if true tf(unnormalized term-frequency) else TFIDF(normalized through maxFrequncy)

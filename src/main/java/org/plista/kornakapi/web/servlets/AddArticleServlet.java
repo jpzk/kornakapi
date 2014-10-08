@@ -68,7 +68,7 @@ public class AddArticleServlet extends BaseServlet {
    * @param itemid
    */
   private void topicInferenceForItem(String label, String itemid){
-	  String name = "lda";
+	  String name = itemid+ "_lda";
 	  LDARecommenderConfig conf = (LDARecommenderConfig) this.getConfiguration().getLDARecommender();
 	  Path p = new Path(conf.getLDARecommenderModelPath());
 	  DocumentTopicInferenceTrainer trainer = new DocumentTopicInferenceTrainer(conf, p, itemid);

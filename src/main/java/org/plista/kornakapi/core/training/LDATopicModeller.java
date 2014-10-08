@@ -18,11 +18,14 @@ package org.plista.kornakapi.core.training;
 
 import java.io.File;
 import java.io.IOException;
-
+import java.util.List;
 
 import org.apache.mahout.cf.taste.model.DataModel;
-
+import org.apache.mahout.utils.vectors.VectorDumper;
+import org.plista.kornakapi.core.config.LDARecommenderConfig;
 import org.plista.kornakapi.core.config.RecommenderConfig;
+
+import com.google.common.collect.Lists;
 
 
 /**
@@ -63,4 +66,5 @@ public class LDATopicModeller extends AbstractTrainer{
 	protected void doTrain(File targetFile, DataModel inmemoryData,
 			int numProcessors) throws IOException {	
 	}
+	
 }

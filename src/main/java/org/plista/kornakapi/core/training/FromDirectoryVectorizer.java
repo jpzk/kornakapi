@@ -16,14 +16,9 @@
 
 package org.plista.kornakapi.core.training;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.ToolRunner;
-import org.apache.mahout.cf.taste.model.DataModel;
-import org.apache.mahout.text.LuceneStorageConfiguration;
 import org.apache.mahout.text.SequenceFilesFromDirectory;
 import org.apache.mahout.utils.vectors.RowIdJob;
 import org.apache.mahout.vectorizer.SparseVectorsFromSequenceFiles;
@@ -31,9 +26,9 @@ import org.plista.kornakapi.core.config.LDARecommenderConfig;
 import org.plista.kornakapi.core.config.RecommenderConfig;
 import com.google.common.collect.Lists;
 
-public class FromDirectoryVectorizer extends AbstractTrainer{
+public class FromDirectoryVectorizer {
 	
-	private LuceneStorageConfiguration luceneStorageConf;
+	
 	private Path DocumentFilesPath;
 	private Path sequenceFilesPath;
 	private Path sparseVectorOut;
@@ -44,13 +39,12 @@ public class FromDirectoryVectorizer extends AbstractTrainer{
 	 * @param conf
 	 */
 	protected FromDirectoryVectorizer(RecommenderConfig conf) {
-		super(conf);
 		this.conf = (LDARecommenderConfig)conf;
 		DocumentFilesPath = new Path(this.conf.getTextDirectoryPath());
 		sequenceFilesPath = new Path(this.conf.getVectorOutputPath());
 		sparseVectorOut= new Path(this.conf.getSparseVectorOutputPath());	
 		sparseVectorInputPath = new Path(this.conf.getCVBInputPath());
-		Configuration config = new Configuration();				
+			
 
 	}
 
@@ -60,13 +54,6 @@ public class FromDirectoryVectorizer extends AbstractTrainer{
 		generateSparseVectors(true,true,this.conf.getMaxDFSigma(),sequenceFilesPath,sparseVectorOut);
 		ensureIntegerKeys(sparseVectorOut.suffix("/tf-vectors/part-r-00000"),sparseVectorInputPath);
 
-	}
-
-	@Override
-	protected void doTrain(File targetFile, DataModel inmemoryData,
-			int numProcessors) throws IOException {
-		// TODO Auto-generated method stub
-		
 	}
 	
 	private void generateSequneceFiles(){
