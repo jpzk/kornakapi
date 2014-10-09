@@ -198,7 +198,7 @@ public class RecommendServlet extends BaseServlet {
 	  String name = "lda";
 	  LDARecommenderConfig conf = (LDARecommenderConfig) this.getConfiguration().getLDARecommender();
 	  Path p = new Path(conf.getLDARecommenderModelPath());
-	  DocumentTopicInferenceTrainer trainer = new DocumentTopicInferenceTrainer(conf, p, itemid);
+	  DocumentTopicInferenceTrainer trainer = new DocumentTopicInferenceTrainer(conf, p);
 	  this.setTrainer(name, trainer);
       scheduler().addRecommenderTrainingJob(name);
       try {

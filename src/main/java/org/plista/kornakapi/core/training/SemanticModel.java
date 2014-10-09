@@ -120,7 +120,7 @@ public class SemanticModel{
 		if(itemFeatures.containsKey(itemid)){
 			return itemFeatures.get(itemid);
 		}
-		throw new NoSuchItemException("Item does not exist!");		
+		throw new NoSuchItemException("Item " + itemid+ " does not exist!");		
 	}
 
 

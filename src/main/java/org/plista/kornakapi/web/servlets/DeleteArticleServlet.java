@@ -45,6 +45,11 @@ public class DeleteArticleServlet extends BaseServlet {
     	File f = new File(path);
     	if(f.exists()){
     		f.delete();
+    	}
+    	path = ((LDARecommenderConfig) this.getConfiguration().getLDARecommender()).getInferencePath()+ "Documents/" + Long.toString(itemID);
+    	f = new File(path);
+    	if(f.exists()){
+    		f.delete();
     	}	
     } catch(NullPointerException e){
 	  if(log.isInfoEnabled()){

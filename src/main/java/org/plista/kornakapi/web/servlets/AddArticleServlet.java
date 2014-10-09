@@ -47,7 +47,7 @@ public class AddArticleServlet extends BaseServlet {
     }
     try{
     	this.storages().get("lda").addCandidate(label, itemID);
-    	String path = ((LDARecommenderConfig) this.getConfiguration().getLDARecommender()).getTextDirectoryPath() + Long.toString(itemID);
+    	String path = ((LDARecommenderConfig) this.getConfiguration().getLDARecommender()).getInferencePath()+ "Documents/" + Long.toString(itemID);
     	File f = new File(path);
     	if(!f.exists()){
     		f.createNewFile();
@@ -55,7 +55,7 @@ public class AddArticleServlet extends BaseServlet {
             output.write(text);
             output.close();
     	}
-    	topicInferenceForItem(label, Long.toString(itemID));	
+    	topicInferenceForNewItems();	
     } catch(NullPointerException e){
 	  if(log.isInfoEnabled()){
 		  log.info("No Recommender found for label {} and itemID {}", label, itemID );
@@ -71,7 +71,7 @@ public class AddArticleServlet extends BaseServlet {
 	  String name = itemid+ "_lda";
 	  LDARecommenderConfig conf = (LDARecommenderConfig) this.getConfiguration().getLDARecommender();
 	  Path p = new Path(conf.getLDARecommenderModelPath());
-	  DocumentTopicInferenceTrainer trainer = new DocumentTopicInferenceTrainer(conf, p, itemid);
+	  DocumentTopicInferenceTrainer trainer = new DocumentTopicInferenceTrainer(conf, p);
 	  this.setTrainer(name, trainer);
       scheduler().addRecommenderTrainingJob(name);
       try {
@@ -81,6 +81,25 @@ public class AddArticleServlet extends BaseServlet {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
 	} catch (NumberFormatException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+  }
+  
+  /**
+   * This methods tries to create a new job that performs topicInference for new articles
+   * All articles in the respective folder will be considered.
+   */
+  private void topicInferenceForNewItems(){
+	  String name = "inference_lda";
+	  LDARecommenderConfig conf = (LDARecommenderConfig) this.getConfiguration().getLDARecommender();
+	  Path p = new Path(conf.getLDARecommenderModelPath());
+	  DocumentTopicInferenceTrainer trainer = new DocumentTopicInferenceTrainer(conf, p);
+	  this.setTrainer(name, trainer);
+      scheduler().addRecommenderTrainingJob(name);
+      try {
+		scheduler().immediatelyTrainRecommender(name);
+	} catch (SchedulerException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
 	}

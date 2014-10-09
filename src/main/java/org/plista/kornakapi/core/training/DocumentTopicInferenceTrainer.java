@@ -9,7 +9,6 @@ import java.util.HashMap;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.SequenceFile.Reader;
@@ -25,22 +24,27 @@ import org.apache.mahout.math.VectorWritable;
 import org.plista.kornakapi.core.config.LDARecommenderConfig;
 import org.plista.kornakapi.core.config.RecommenderConfig;
 
+
+
+
 import com.google.common.io.Closeables;
+import com.google.common.io.Files;
+
 
 public class DocumentTopicInferenceTrainer extends AbstractTrainer{
 	private LDARecommenderConfig conf;
 	org.apache.hadoop.conf.Configuration lconf = new org.apache.hadoop.conf.Configuration(); 
 	private FileSystem fs;
 	private int modelWeight = 1;
-	private HashMap<String,Integer> dict;
+
 	private Path path;
 	private HashMap<Integer,String> indexItem;
 	private HashMap<String,Integer> itemIndex;
 	private HashMap<String, Vector> itemFeatures;
-	private String itemid;
+	private int trainingThreads;
 	
 
-	public DocumentTopicInferenceTrainer(RecommenderConfig conf, Path path, String itemid) {
+	public DocumentTopicInferenceTrainer(RecommenderConfig conf, Path path) {
 		super(conf);
 		this.conf = (LDARecommenderConfig)conf;
 		try {
@@ -49,9 +53,9 @@ public class DocumentTopicInferenceTrainer extends AbstractTrainer{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		this.dict = this.getDict();
+
 		this.path = path;
-		this.itemid = itemid;
+		trainingThreads = this.conf.getInferenceThreats();
 	}
 	
 	
@@ -59,11 +63,12 @@ public class DocumentTopicInferenceTrainer extends AbstractTrainer{
 	 * 
 	 * @param itemid
 	 */
-	private void inferTopics(int TrainingThreats, String itemid){      
-		 Vector item;
-		try {
-			item = createVectorFromFile(itemid);		 
-			TopicModel model = new TopicModel(lconf, conf.getEta(), conf.getAlpha(), getDictAsArray(), TrainingThreats, modelWeight, 
+	private void inferTopics(String itemid, Vector item){      
+		if(itemFeatures.containsKey(itemid)){
+			return;
+		}
+		try {			
+			TopicModel model = new TopicModel(lconf, conf.getEta(), conf.getAlpha(), getDictAsArray(), trainingThreads, modelWeight, 
 					new Path(this.conf.getTopicsOutputPath())); 
 			 Vector docTopics = new DenseVector(new double[model.getNumTopics()]).assign(1.0/model.getNumTopics());
 			 Matrix docTopicModel = new SparseRowMatrix(model.getNumTopics(), item.size());
@@ -80,6 +85,24 @@ public class DocumentTopicInferenceTrainer extends AbstractTrainer{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
+	}
+	/**
+	 * 
+	 */
+	private void inferTopicsForItems(){
+		HashMap<String, Vector> tfVectors = createVectorsFromDir();
+		if(tfVectors== null){ //If there are now topics then there is nothing to infere
+			return;
+		}
+		for(String itemid : tfVectors.keySet()){
+			inferTopics(itemid, tfVectors.get(itemid));
+		}
+		try {
+			safe();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
 	}
 	
 	/**
@@ -98,54 +121,75 @@ public class DocumentTopicInferenceTrainer extends AbstractTrainer{
 		Closeables.close(reader, false);
         return dict.toArray(new String[dict.size()]);
 	}
-	/**
-	 * 
-	 * @param itemid
-	 * @return
-	 * @throws Exception
-	 */
-	private Vector createVectorFromFile(String itemid) throws Exception{
-		FromFileVectorizer vectorizer = new FromFileVectorizer(conf, itemid);
-		vectorizer.doTrain();
-		ArrayList<String> newDict = getFileDict(itemid);
-		
-				
-        HashMap<String, Long> newDocTermFreq = new HashMap<String, Long>();
-        SequenceFile.Reader reader = new SequenceFile.Reader(fs, new Path(conf.getInferencePath() + "/sparsein/wordcount/part-r-00000"), lconf);
-        Text key = new Text();
-        LongWritable val = new LongWritable();
-        while(reader.next(key, val)){
-            newDocTermFreq.put(key.toString(), Long.parseLong(val.toString()));
-        }
-		RandomAccessSparseVector newDocVector = new RandomAccessSparseVector(dict.size());
-        for (String string : newDict) {
-            if(dict.containsKey(string)){
-                int index = dict.get(string);
-                double tf = newDocTermFreq.get(string);
-                newDocVector.set(index, tf);
-            }
-        }
-        Closeables.close(reader, false);
-        return newDocVector;
-	}
-	/**
-	 * 
-	 * @return
-	 */
-	private HashMap<String,Integer> getDict(){
-        HashMap<String,Integer> modelDictionary = new HashMap<String, Integer>();
-		try {	
-			Reader reader = new SequenceFile.Reader(fs,new Path(this.conf.getTopicsDictionaryPath()) , lconf);
-			Text keyModelDict = new Text();
-		    IntWritable valModelDict = new IntWritable();
-		    while(reader.next(keyModelDict, valModelDict)){
-		        modelDictionary.put(keyModelDict.toString(), Integer.parseInt(valModelDict.toString()));
-		    }   
+
+	
+	private HashMap<String,Vector> getNewVectors(){
+		HashMap<String, Vector> newVectors = new HashMap<String, Vector>();
+		try {
+			SequenceFile.Reader reader = new SequenceFile.Reader(fs, new Path(conf.getInferencePath() + "sparsein/tf-vectors/part-r-00000"), lconf);
+			Text key = new Text();
+			VectorWritable val = new VectorWritable();
+			while(reader.next(key, val)){
+				newVectors.put(key.toString().substring(1), val.get());
+			}
 			Closeables.close(reader, false);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		return newVectors;
+	}
+	/**
+	 * @throws IOException 
+	 * 
+	 */
+	private HashMap<String, Vector> createVectorsFromDir() {
+        HashMap<String, Vector> newVectors = getNewVectors();
+		cleanup(newVectors);
+		ArrayList<String> newDict = null;
+		HashMap<String,Integer> oldDict = null;
+		try {
+			newDict = this.getFileDict();
+			oldDict = getDict();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        HashMap<String, Vector> tfVectors = new HashMap<String, Vector>();  
+		if(oldDict != null){
+	        for(String key : newVectors.keySet()){
+	        	RandomAccessSparseVector newArticleTF = new RandomAccessSparseVector(oldDict.size());
+	        	Vector val = newVectors.get(key);
+	        	for(int i = 0; i< val.size(); i++){
+					double tf =val.get(i);
+					String ngram = newDict.get(i);
+					if(oldDict.containsKey(ngram)){
+						int idx = oldDict.get(ngram);
+						newArticleTF.set(idx, tf);
+					}
+	        	}
+				tfVectors.put(key.toString(), newArticleTF);	
+	        }
+		}
+		return tfVectors;
+	}
+	
+
+	/**
+	 * 
+	 * @return
+	 * @throws IOException 
+	 */
+	private HashMap<String,Integer> getDict() throws IOException{
+        HashMap<String,Integer> modelDictionary = new HashMap<String, Integer>();
+		Reader reader = new SequenceFile.Reader(fs,new Path(this.conf.getTopicsDictionaryPath()) , lconf);
+		Text keyModelDict = new Text();
+	    IntWritable valModelDict = new IntWritable();
+	    while(reader.next(keyModelDict, valModelDict)){
+	        modelDictionary.put(keyModelDict.toString(), Integer.parseInt(valModelDict.toString()));
+	    }   
+		Closeables.close(reader, false);
+
     	return modelDictionary;
 
 	} 
@@ -153,16 +197,16 @@ public class DocumentTopicInferenceTrainer extends AbstractTrainer{
 	/*
 	 * 
 	 */
-	private ArrayList<String> getFileDict(String itemid) throws IOException{
-        ArrayList<String> newDocDictionaryWords = new ArrayList<String>();
+	private ArrayList<String> getFileDict() throws IOException{
+        ArrayList<String> dict = new ArrayList<String>();
         Reader reader = new SequenceFile.Reader(fs, new Path(conf.getInferencePath() + "/sparsein/dictionary.file-0"), lconf);
-        Text keyNewDict = new Text();
-        IntWritable newVal = new IntWritable();
-        while(reader.next(keyNewDict,newVal)){
-            newDocDictionaryWords.add(keyNewDict.toString());
+        Text keyText = new Text();
+        IntWritable valCount = new IntWritable();
+        while(reader.next(keyText,valCount)){
+            dict.add(keyText.toString());
         }
         Closeables.close(reader, false);
-        return newDocDictionaryWords;
+        return dict;
 	}
 	
 	/**
@@ -255,9 +299,36 @@ public class DocumentTopicInferenceTrainer extends AbstractTrainer{
 	protected void doTrain(File targetFile, DataModel inmemoryData,
 			int numProcessors) throws IOException {
 		read();
-		inferTopics(conf.getInferenceThreats(), itemid);
-		safe();
-		
-	}
+		FromFileVectorizer vectorizer = new FromFileVectorizer(conf);
+		try {
+			vectorizer.doTrain();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
+		inferTopicsForItems();
+
+	}
+	
+	/**
+	 * Moves new Articles to the Corpus
+	 * @param tfVectors
+	 */
+	protected void cleanup(HashMap<String, Vector> tfVectors){
+		for(String key : tfVectors.keySet()){
+			File from = new File(conf.getInferencePath()+ "Documents/"+ key);
+			File to = new File(conf.getTextDirectoryPath()+ key);
+			try {
+				File newFile = new File(to.toString());
+				if(newFile.exists()){
+					newFile.delete();
+				}
+				Files.copy(from, to);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}		
+	}
 }

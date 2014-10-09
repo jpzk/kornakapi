@@ -20,12 +20,14 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.mahout.cf.taste.model.DataModel;
 import org.apache.mahout.utils.vectors.VectorDumper;
 import org.plista.kornakapi.core.config.LDARecommenderConfig;
 import org.plista.kornakapi.core.config.RecommenderConfig;
 
 import com.google.common.collect.Lists;
+import com.google.common.io.Files;
 
 public class LDATrainer extends AbstractTrainer{
 	
@@ -40,6 +42,7 @@ public class LDATrainer extends AbstractTrainer{
 	protected void doTrain(File targetFile, DataModel inmemoryData,
 			int numProcessors) throws IOException {
 		try {
+			collectNewArticles();
 			new FromDirectoryVectorizer(conf).doTrain();
 			new LDATopicModeller(conf).doTrain();
 			printLocalTopicWordDistribution(conf,((LDARecommenderConfig)conf).getTopicsOutputPath(),((LDARecommenderConfig)conf).getTopicsOutputPath());
@@ -48,6 +51,27 @@ public class LDATrainer extends AbstractTrainer{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}		
+	}
+	
+	/**
+	 * copys all new articles to the corpus
+	 */
+	protected void collectNewArticles(){
+		File newDocs = new File(((LDARecommenderConfig)conf).getInferencePath()+ "Documents");
+		String corpusDir = ((LDARecommenderConfig)conf).getTextDirectoryPath();
+		for(File from: newDocs.listFiles()){
+			File to = new File(corpusDir+ from.getName());
+			try {
+				File newFile = new File(to.toString());
+				if(newFile.exists()){
+					newFile.delete();
+				}
+				Files.move(from, to);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}	
 	}
 	
 	/**
