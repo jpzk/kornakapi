@@ -62,7 +62,7 @@ public class FromLuceneVectorizer{
 	protected void doTrain() throws Exception {
 		SequenceFilesFromLuceneStorage lucene2seq = new SequenceFilesFromLuceneStorage();
 		lucene2seq.run(luceneStorageConf);	
-		generateSparseVectors(true,true,3,sequenceFilesPath,sparseVectorOut);
+		generateSparseVectors(false,true,3,sequenceFilesPath,sparseVectorOut);
 		ensureIntegerKeys(sparseVectorOut.suffix("/tf-vectors/part-r-00000"),sparseVectorInputPath);
 
 	}

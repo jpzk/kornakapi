@@ -46,7 +46,7 @@ public class LDATrainer extends AbstractTrainer{
 			new FromDirectoryVectorizer(conf).doTrain();
 			new LDATopicModeller(conf).doTrain();
 			printLocalTopicWordDistribution(conf,((LDARecommenderConfig)conf).getTopicsOutputPath(),((LDARecommenderConfig)conf).getTopicsOutputPath());
-			//printLocalDocumentTopicDistribution(conf,((LDARecommenderConfig)conf).getLDADocTopicsPath(),((LDARecommenderConfig)conf).getLDADocTopicsPath());
+			printLocalDocumentTopicDistribution(conf,((LDARecommenderConfig)conf).getLDADocTopicsPath(),((LDARecommenderConfig)conf).getLDADocTopicsPath());
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -93,7 +93,7 @@ public class LDATrainer extends AbstractTrainer{
 	        argList.add("-sort");
 	        argList.add("true");
 	        argList.add("-vs");
-	        argList.add("20");
+	        argList.add("100");
 	        String[] args = argList.toArray(new String[argList.size()]);
 	        try {
 				//LDAPrintTopics.main(args);
@@ -119,7 +119,7 @@ public class LDATrainer extends AbstractTrainer{
 	        argList.add("-sort");
 	        argList.add("true");
 	        argList.add("-vs");
-	        argList.add("20");
+	        argList.add("100");
 	        argList.add("-p");
 	        argList.add("true");
 	        String[] args = argList.toArray(new String[argList.size()]);
@@ -129,6 +129,6 @@ public class LDATrainer extends AbstractTrainer{
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}
+		}
 	}	
 }

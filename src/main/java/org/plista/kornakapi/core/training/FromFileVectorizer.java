@@ -53,7 +53,7 @@ public class FromFileVectorizer {
 
 	protected void doTrain() throws Exception {
 		generateSequneceFiles();
-		generateSparseVectors(true,true,this.conf.getMaxDFSigma(),sequenceFilesPath,sparseVectorOut);
+		generateSparseVectors(false,true,this.conf.getMaxDFSigma(),sequenceFilesPath,sparseVectorOut);
 
 	}
 	/**
