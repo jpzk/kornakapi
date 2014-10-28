@@ -3,6 +3,7 @@ package org.plista.kornakapi.core.config;
 
 public class LDARecommenderConfig extends RecommenderConfig{
 	
+	private String trainingset;
 	private String luceneIndexPath;
 	private Integer numberOfTopics;
 	private String ldaModelDirectory;
@@ -16,6 +17,10 @@ public class LDARecommenderConfig extends RecommenderConfig{
 		return luceneIndexPath;
 	}
 
+	public String getTrainingSetName() {
+		return trainingset;
+	}
+	
 	public String getVectorOutputPath() {
 		return ldaModelDirectory + "/seq/";
 	}

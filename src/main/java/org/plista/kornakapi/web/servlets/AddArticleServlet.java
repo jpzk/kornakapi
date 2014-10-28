@@ -16,6 +16,8 @@
 package org.plista.kornakapi.web.servlets;
 import org.apache.hadoop.fs.Path;
 import org.plista.kornakapi.core.config.LDARecommenderConfig;
+import org.plista.kornakapi.core.io.LDAArticleWriter;
+import org.plista.kornakapi.core.preprocessing.StopwordFilter;
 import org.plista.kornakapi.core.training.DocumentTopicInferenceTrainer;
 import org.plista.kornakapi.web.Parameters;
 import org.quartz.SchedulerException;
@@ -46,15 +48,15 @@ public class AddArticleServlet extends BaseServlet {
     	itemID = this.idRemapping(itemID);
     }
     try{
-    	this.storages().get("lda").addCandidate(label, itemID);
-    	String path = ((LDARecommenderConfig) this.getConfiguration().getLDARecommender()).getInferencePath()+ "Documents/" + Long.toString(itemID);
-    	File f = new File(path);
-    	if(!f.exists()){
-    		f.createNewFile();
-    		BufferedWriter output = new BufferedWriter(new FileWriter(f));
-            output.write(text);
-            output.close();
-    	}
+    	LDAArticleWriter writer = new LDAArticleWriter();
+    	
+    	// save the fulltext as usual
+    	writer.writeArticle(label, itemID, text, "pure");
+    	
+    	// save preprocessed text 
+    	StopwordFilter filter = new StopwordFilter();
+    	writer.writeArticle(label, itemID, filter.filterText(text), "stopwords");
+    	
     	topicInferenceForNewItems();	
     } catch(NullPointerException e){
 	  if(log.isInfoEnabled()){

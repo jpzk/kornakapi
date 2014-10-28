@@ -42,8 +42,8 @@ public class FromFileVectorizer {
 	 * @param conf
 	 */
 	protected FromFileVectorizer(LDARecommenderConfig conf) {
-
-		DocumentFilesPath = new Path(conf.getInferencePath()+ "Documents/");
+		String setName = conf.getTrainingSetName();
+		DocumentFilesPath = new Path(conf.getInferencePath()+ "Documents/" + setName + "/");
 		sequenceFilesPath = new Path(conf.getInferencePath() + "seq");
 		sparseVectorOut= new Path(conf.getInferencePath() + "sparsein");
 		this.conf = conf;
