@@ -9,6 +9,6 @@ public class BadcharFilterTest extends TestCase {
 	@Test
 	public void testFilter() {
 		BadcharFilter filter = new BadcharFilter();
-		assertEquals(filter.filterText("here are som; b3d ch,,arcters"), "here are som bd charcters");
+		assertEquals(filter.filterText("ühere are som; b3d ch,,arcters"), "ühere are som bd charcters");
 	}
 }
