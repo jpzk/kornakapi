@@ -31,11 +31,11 @@ import com.google.common.io.Files;
 
 public class LDATrainer extends AbstractTrainer{
 	
-	private RecommenderConfig conf;
+	private LDARecommenderConfig conf;
 	
 	public LDATrainer(RecommenderConfig conf){
 		super(conf);
-		this.conf = conf;
+		this.conf = (LDARecommenderConfig) conf;
 	}
 
 	@Override
@@ -57,7 +57,9 @@ public class LDATrainer extends AbstractTrainer{
 	 * copys all new articles to the corpus
 	 */
 	protected void collectNewArticles(){
-		File newDocs = new File(((LDARecommenderConfig)conf).getInferencePath()+ "Documents");
+		// train a specific training set
+		String trainingSet = conf.getTrainingSetName();
+		File newDocs = new File(((LDARecommenderConfig)conf).getInferencePath()+ "Documents" + trainingSet + '/' );
 		String corpusDir = ((LDARecommenderConfig)conf).getTextDirectoryPath();
 		for(File from: newDocs.listFiles()){
 			File to = new File(corpusDir+ from.getName());
