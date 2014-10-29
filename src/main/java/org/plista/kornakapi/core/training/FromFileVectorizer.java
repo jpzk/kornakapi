@@ -43,12 +43,10 @@ public class FromFileVectorizer {
 	 */
 	protected FromFileVectorizer(LDARecommenderConfig conf) {
 		String setName = conf.getTrainingSetName();
-		DocumentFilesPath = new Path(conf.getInferencePath()+ "Documents/" + setName + "/");
+		DocumentFilesPath = new Path(conf.getInferencePath()+ "Documents/" + setName + "/" + conf.getTrainingSetName());
 		sequenceFilesPath = new Path(conf.getInferencePath() + "seq");
 		sparseVectorOut= new Path(conf.getInferencePath() + "sparsein");
 		this.conf = conf;
-		
-
 	}
 
 	protected void doTrain() throws Exception {
