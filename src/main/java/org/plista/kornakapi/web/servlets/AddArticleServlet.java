@@ -33,6 +33,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URLDecoder;
+
 
 /** servlet to add articles to a candidate set */
 public class AddArticleServlet extends BaseServlet {
@@ -51,6 +53,9 @@ public class AddArticleServlet extends BaseServlet {
     try{
     	LDAArticleWriter writer = new LDAArticleWriter();
     	
+    	// this is important.
+    	text = URLDecoder.decode(text, "UTF-8");
+    	
     	// save the fulltext as usual
     	writer.writeArticle(label, itemID, text, "pure");
     	
@@ -58,6 +63,7 @@ public class AddArticleServlet extends BaseServlet {
     	StopwordFilter filter = new StopwordFilter();
     	BadcharFilter filter_bc = new BadcharFilter();
     	
+
     	String processed = filter.filterText(filter_bc.filterText(text));
     	writer.writeArticle(label, itemID, processed, "stopwords");
     	
