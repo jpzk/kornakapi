@@ -14,7 +14,7 @@ public class StopwordFilter {
 	 * Array containing all stop words
 	 */
 	private HashSet<String> mStopwordsSet;
-
+	
 	/**
 	 * Loads the stop word list.
 	 * 

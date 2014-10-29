@@ -17,6 +17,7 @@ package org.plista.kornakapi.web.servlets;
 import org.apache.hadoop.fs.Path;
 import org.plista.kornakapi.core.config.LDARecommenderConfig;
 import org.plista.kornakapi.core.io.LDAArticleWriter;
+import org.plista.kornakapi.core.preprocessing.BadcharFilter;
 import org.plista.kornakapi.core.preprocessing.StopwordFilter;
 import org.plista.kornakapi.core.training.DocumentTopicInferenceTrainer;
 import org.plista.kornakapi.web.Parameters;
@@ -55,7 +56,10 @@ public class AddArticleServlet extends BaseServlet {
     	
     	// save preprocessed text 
     	StopwordFilter filter = new StopwordFilter();
-    	writer.writeArticle(label, itemID, filter.filterText(text), "stopwords");
+    	BadcharFilter filter_bc = new BadcharFilter();
+    	
+    	String processed = filter.filterText(filter_bc.filterText(text));
+    	writer.writeArticle(label, itemID, processed, "stopwords");
     	
     	topicInferenceForNewItems();	
     } catch(NullPointerException e){
