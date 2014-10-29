@@ -317,7 +317,7 @@ public class DocumentTopicInferenceTrainer extends AbstractTrainer{
 	 */
 	protected void cleanup(HashMap<String, Vector> tfVectors){
 		for(String key : tfVectors.keySet()){
-			File from = new File(conf.getTrainingSetName() +"/" + key);
+			File from = new File(conf.getInferencePath() + "Documents/"+ conf.getTrainingSetName() +"/" + key);
 			File to = new File(conf.getTextDirectoryPath()+ key);
 			try {
 				File newFile = new File(to.toString());
