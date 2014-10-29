@@ -59,7 +59,7 @@ public class LDATrainer extends AbstractTrainer{
 	protected void collectNewArticles(){
 		// train a specific training set
 		String trainingSet = conf.getTrainingSetName();
-		File newDocs = new File(((LDARecommenderConfig)conf).getInferencePath()+ "Documents" + trainingSet + '/' );
+		File newDocs = new File(((LDARecommenderConfig)conf).getInferencePath()+ "Documents/" + trainingSet + '/' );
 		String corpusDir = ((LDARecommenderConfig)conf).getTextDirectoryPath();
 		for(File from: newDocs.listFiles()){
 			File to = new File(corpusDir+ from.getName());
