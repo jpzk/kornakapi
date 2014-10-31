@@ -47,7 +47,7 @@ public class RecommendServlet extends BaseServlet {
 
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
+	  
 
     int howMany = getParameterAsInt(request, Parameters.HOW_MANY, Parameters.DEFAULT_HOW_MANY);
 
@@ -63,8 +63,14 @@ public class RecommendServlet extends BaseServlet {
 		String recommenderName = getParameter(request, Parameters.RECOMMENDER, true);
 	    KornakapiRecommender recommender = recommender(recommenderName);
 	    long[] itemIDs = getParameterAsLongArray(request, Parameters.ITEM_IDS);
+		if (log.isInfoEnabled()) {
+			log.info("Get LDA Recommendations for item {}", itemIDs[0] );
+		}
 	    try {
 			recommendedItems = recommender.recommendToAnonymous(itemIDs, howMany, rescorer);
+			if (log.isInfoEnabled()) {
+				log.info("LDA recommendet {}", recommendedItems.toString() );
+			}
   
 	    
 	      PrintWriter writer = response.getWriter();
