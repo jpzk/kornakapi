@@ -21,7 +21,6 @@ public class LDAArticleWriter {
 		Configuration config = components.getConfiguration();
 		HashMap<String, CandidateCacheStorageDecorator> storages = components.storages();
 		
-    	storages.get("lda").addCandidate(pLabel, pItemId);
     	String path = ((LDARecommenderConfig) config.getLDARecommender()).getInferencePath()+ "Documents/" + pTSet + "/" + Long.toString(pItemId);
     	log.warn(path);
     	File f = new File(path);

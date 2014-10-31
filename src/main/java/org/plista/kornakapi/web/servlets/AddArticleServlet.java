@@ -54,6 +54,8 @@ public class AddArticleServlet extends BaseServlet {
     	itemID = this.idRemapping(itemID);
     }
     try{
+ 
+    	this.storages().get("lda").addCandidate(label, itemID);
     	LDAArticleWriter writer = new LDAArticleWriter();
     	
     	// save the fulltext as usual
