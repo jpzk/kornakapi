@@ -79,6 +79,7 @@ public class FromFileVectorizer {
 	 */
     private void generateSparseVectors (boolean tfWeighting,  boolean named, double maxDFSigma, Path inputPath, Path outputPath) throws Exception {
         List<String> argList = Lists.newLinkedList();
+        argList.add("-ow");
         argList.add("-i");
         argList.add(inputPath.toString());
         argList.add("-o");
