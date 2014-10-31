@@ -62,7 +62,8 @@ public class AddArticleServlet extends BaseServlet {
     	writer.writeArticle(label, itemID, text, "pure");
     	
     	// save preprocessed text 
-    	String basepath = this.getConfiguration().getPreprocessingDataDirectory();
+    	LDARecommenderConfig config = (LDARecommenderConfig) this.getConfiguration().getLDARecommender();
+    	String basepath = config.getPreprocessingDataDirectory();
     	StopwordFilter filter = new StopwordFilter(basepath + "kornakapi_sw_de.txt");
     	BadcharFilter filter_bc = new BadcharFilter();
     	

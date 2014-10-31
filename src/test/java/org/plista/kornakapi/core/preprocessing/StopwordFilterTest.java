@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.junit.Test;
 import org.plista.kornakapi.core.config.Configuration;
+import org.plista.kornakapi.core.config.LDARecommenderConfig;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
@@ -21,7 +22,10 @@ public class StopwordFilterTest extends TestCase {
 		System.out.print(configFile.canRead());
 		Configuration conf =Configuration.fromXML(Files.toString(configFile, Charsets.UTF_8));	
 		
-		StopwordFilter swf = new StopwordFilter(conf.getPreprocessingDataDirectory() + "kornakapi_sw_de.txt");
+    	LDARecommenderConfig config = (LDARecommenderConfig) conf.getLDARecommender();
+    	String basepath = config.getPreprocessingDataDirectory();
+		
+		StopwordFilter swf = new StopwordFilter(basepath + "kornakapi_sw_de.txt");
 		String output = swf.filterText("Das ist ein Test");
 		assertEquals(output, "test");
 	}

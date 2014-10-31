@@ -12,11 +12,16 @@ public class LDARecommenderConfig extends RecommenderConfig{
 	private int trainingThreats;
 	private int inferenceThreats;
 	private double maxTermVariance;
-	
+	private String preprocessingDataDirectory;
+	  
 	public String getLuceneIndexPath(){
 		return luceneIndexPath;
 	}
 
+	public String getPreprocessingDataDirectory() {
+		return this.preprocessingDataDirectory;
+	}
+	  
 	public String getTrainingSetName() {
 		return trainingset;
 	}
