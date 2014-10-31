@@ -34,6 +34,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 
 
 /** servlet to add articles to a candidate set */
@@ -44,6 +45,8 @@ public class AddArticleServlet extends BaseServlet {
   @Override
   protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 	  
+	request.setCharacterEncoding("UTF-8");
+	
 	String label = getParameter(request, Parameters.LABEL, true);
     String text = getParameter(request, Parameters.Text, true);
     long itemID = getParameterAsLong(request, Parameters.ITEM_ID, true);
@@ -55,17 +58,15 @@ public class AddArticleServlet extends BaseServlet {
     	this.storages().get("lda").addCandidate(label, itemID);
     	LDAArticleWriter writer = new LDAArticleWriter();
     	
-    	// this is important.
-    	text = URLDecoder.decode(text, "UTF-8");
-    	
     	// save the fulltext as usual
     	writer.writeArticle(label, itemID, text, "pure");
     	
     	// save preprocessed text 
-    	StopwordFilter filter = new StopwordFilter();
+    	LDARecommenderConfig config = (LDARecommenderConfig) this.getConfiguration().getLDARecommender();
+    	String basepath = config.getPreprocessingDataDirectory();
+    	StopwordFilter filter = new StopwordFilter(basepath + "kornakapi_sw_de.txt");
     	BadcharFilter filter_bc = new BadcharFilter();
     	
-
     	String processed = filter.filterText(filter_bc.filterText(text));
     	writer.writeArticle(label, itemID, processed, "stopwords");
     	

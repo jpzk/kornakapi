@@ -55,7 +55,7 @@ public class Configuration {
 
     return (Configuration) serializer.fromXML(xml);
   }
-
+  
   public String getModelDirectory() {
     return modelDirectory;
   }

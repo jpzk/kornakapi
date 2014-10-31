@@ -20,9 +20,9 @@ public class StopwordFilter {
 	 * 
 	 * @throws IOException
 	 */
-	public StopwordFilter() throws IOException {
+	public StopwordFilter(String pFilename) throws IOException {
 		mStopwordsSet = new HashSet<String>();
-		BufferedReader in = new BufferedReader(new FileReader("data/kornakapi_sw_de.txt"));
+		BufferedReader in = new BufferedReader(new FileReader(pFilename));
 		String line = in.readLine();
 		while(line != null) {
 			mStopwordsSet.add(line.trim());
