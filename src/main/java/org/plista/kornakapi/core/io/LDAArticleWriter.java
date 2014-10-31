@@ -23,10 +23,11 @@ public class LDAArticleWriter {
 		
     	String path = ((LDARecommenderConfig) config.getLDARecommender()).getInferencePath()+ "Documents/" + pTSet + "/" + Long.toString(pItemId);
     	String documentsPath = (((LDARecommenderConfig) config.getLDARecommender()).getTextDirectoryPath()+  Long.toString(pItemId));
+    	
     	log.warn(path);
-    	write(path,pTSet);
-    	write(documentsPath,pTSet);
-
+    	write(path, pText);
+    	write(documentsPath, pText);
+    	
 	}
 	private void write(String filename, String pText) throws IOException{
     	File f = new File(filename);
