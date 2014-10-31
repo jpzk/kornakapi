@@ -50,6 +50,7 @@ public class AddArticleServlet extends BaseServlet {
 	String label = getParameter(request, Parameters.LABEL, true);
     String text = getParameter(request, Parameters.Text, true);
     long itemID = getParameterAsLong(request, Parameters.ITEM_ID, true);
+    
     if(itemID < 0 || itemID > 2147483647){
     	itemID = this.idRemapping(itemID);
     }
