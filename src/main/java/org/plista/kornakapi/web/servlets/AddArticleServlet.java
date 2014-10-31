@@ -46,7 +46,7 @@ public class AddArticleServlet extends BaseServlet {
   protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 	  
 	request.setCharacterEncoding("UTF-8");
-	  
+	
 	String label = getParameter(request, Parameters.LABEL, true);
     String text = getParameter(request, Parameters.Text, true);
     long itemID = getParameterAsLong(request, Parameters.ITEM_ID, true);
@@ -60,10 +60,10 @@ public class AddArticleServlet extends BaseServlet {
     	writer.writeArticle(label, itemID, text, "pure");
     	
     	// save preprocessed text 
-    	StopwordFilter filter = new StopwordFilter();
+    	String basepath = this.getConfiguration().getPreprocessingDataDirectory();
+    	StopwordFilter filter = new StopwordFilter(basepath + "kornakapi_sw_de.txt");
     	BadcharFilter filter_bc = new BadcharFilter();
     	
-
     	String processed = filter.filterText(filter_bc.filterText(text));
     	writer.writeArticle(label, itemID, processed, "stopwords");
     	

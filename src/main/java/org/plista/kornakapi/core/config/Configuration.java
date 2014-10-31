@@ -25,6 +25,9 @@ import java.util.List;
 /** basic configuration object for the weblayer */
 public class Configuration {
 
+  /** directory to store additional files for preprocessing such as stop word lists **/
+  private String preprocessingDataDirectory;
+	
   /** directory to store the models in */
   private String modelDirectory;
   /** number of cores to use for training */
@@ -56,6 +59,10 @@ public class Configuration {
     return (Configuration) serializer.fromXML(xml);
   }
 
+  public String getPreprocessingDataDirectory() {
+	  return this.preprocessingDataDirectory;
+  }
+  
   public String getModelDirectory() {
     return modelDirectory;
   }
