@@ -145,7 +145,7 @@ public class DocumentTopicInferenceTrainer extends AbstractTrainer{
 	 */
 	private HashMap<String, Vector> createVectorsFromDir() {
         HashMap<String, Vector> newVectors = getNewVectors();
-		cleanup(newVectors);
+		//cleanup(newVectors);
 		ArrayList<String> newDict = null;
 		HashMap<String,Integer> oldDict = null;
 		try {

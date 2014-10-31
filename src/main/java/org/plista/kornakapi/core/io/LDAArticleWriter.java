@@ -22,13 +22,20 @@ public class LDAArticleWriter {
 		HashMap<String, CandidateCacheStorageDecorator> storages = components.storages();
 		
     	String path = ((LDARecommenderConfig) config.getLDARecommender()).getInferencePath()+ "Documents/" + pTSet + "/" + Long.toString(pItemId);
+    	String documentsPath = (((LDARecommenderConfig) config.getLDARecommender()).getTextDirectoryPath()+  Long.toString(pItemId));
     	log.warn(path);
-    	File f = new File(path);
-    	if(!f.exists()){
-    		f.createNewFile();
-    		BufferedWriter output = new BufferedWriter(new FileWriter(f));
-            output.write(pText);
-            output.close();
+    	write(path,pTSet);
+    	write(documentsPath,pTSet);
+
+	}
+	private void write(String filename, String pText) throws IOException{
+    	File f = new File(filename);
+    	if(f.exists()){
+    		f.delete();
     	}
+		f.createNewFile();
+		BufferedWriter output = new BufferedWriter(new FileWriter(f));
+        output.write(pText);
+        output.close();
 	}
 }
