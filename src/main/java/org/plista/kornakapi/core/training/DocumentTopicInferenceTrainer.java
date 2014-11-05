@@ -1,34 +1,25 @@
 
 package org.plista.kornakapi.core.training;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-
+import com.google.common.io.Closeables;
+import com.google.common.io.Files;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.SequenceFile;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.SequenceFile.Reader;
 import org.apache.hadoop.io.SequenceFile.Writer;
+import org.apache.hadoop.io.Text;
 import org.apache.mahout.cf.taste.model.DataModel;
 import org.apache.mahout.clustering.lda.cvb.TopicModel;
-import org.apache.mahout.math.DenseVector;
-import org.apache.mahout.math.Matrix;
-import org.apache.mahout.math.RandomAccessSparseVector;
-import org.apache.mahout.math.SparseRowMatrix;
-import org.apache.mahout.math.Vector;
-import org.apache.mahout.math.VectorWritable;
+import org.apache.mahout.math.*;
 import org.plista.kornakapi.core.config.LDARecommenderConfig;
 import org.plista.kornakapi.core.config.RecommenderConfig;
 
-
-
-
-import com.google.common.io.Closeables;
-import com.google.common.io.Files;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 
 public class DocumentTopicInferenceTrainer extends AbstractTrainer{
@@ -126,7 +117,7 @@ public class DocumentTopicInferenceTrainer extends AbstractTrainer{
 	private HashMap<String,Vector> getNewVectors(){
 		HashMap<String, Vector> newVectors = new HashMap<String, Vector>();
 		try {
-			SequenceFile.Reader reader = new SequenceFile.Reader(fs, new Path(conf.getInferencePath() + "sparsein/tf-vectors/part-r-00000"), lconf);
+			SequenceFile.Reader reader = new SequenceFile.Reader(fs, new Path(conf.getInferencePath() + "sparsein/tfidf-vectors/part-r-00000"), lconf);
 			Text key = new Text();
 			VectorWritable val = new VectorWritable();
 			while(reader.next(key, val)){

@@ -16,7 +16,7 @@
 
 package org.plista.kornakapi.core.training;
 
-import java.util.List;
+import com.google.common.collect.Lists;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.mahout.text.SequenceFilesFromDirectory;
@@ -24,7 +24,8 @@ import org.apache.mahout.utils.vectors.RowIdJob;
 import org.apache.mahout.vectorizer.SparseVectorsFromSequenceFiles;
 import org.plista.kornakapi.core.config.LDARecommenderConfig;
 import org.plista.kornakapi.core.config.RecommenderConfig;
-import com.google.common.collect.Lists;
+
+import java.util.List;
 
 public class FromDirectoryVectorizer {
 	
@@ -52,7 +53,7 @@ public class FromDirectoryVectorizer {
 		generateSequneceFiles();
         System.out.println("finished dir to seq job");
 		generateSparseVectors(false,true,this.conf.getMaxDFSigma(),sequenceFilesPath,sparseVectorOut);
-		ensureIntegerKeys(sparseVectorOut.suffix("/tf-vectors/part-r-00000"),sparseVectorInputPath);
+		ensureIntegerKeys(sparseVectorOut.suffix("/tfidf-vectors/part-r-00000"),sparseVectorInputPath);
 
 	}
 	
