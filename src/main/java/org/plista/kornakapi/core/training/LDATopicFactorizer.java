@@ -16,16 +16,14 @@
 
 package org.plista.kornakapi.core.training;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-
+import com.google.common.collect.Lists;
+import com.google.common.io.Closeables;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.SequenceFile;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.SequenceFile.Reader;
+import org.apache.hadoop.io.Text;
 import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.clustering.lda.cvb.InMemoryCollapsedVariationalBayes0;
 import org.apache.mahout.math.Vector;
@@ -33,8 +31,9 @@ import org.apache.mahout.math.VectorWritable;
 import org.plista.kornakapi.core.config.LDARecommenderConfig;
 import org.plista.kornakapi.core.config.RecommenderConfig;
 
-import com.google.common.collect.Lists;
-import com.google.common.io.Closeables;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
 
 
 /**
@@ -174,6 +173,8 @@ public class LDATopicFactorizer{
         argList.add(convergenceDelta.toString());
         argList.add("-ntt");
         argList.add(((LDARecommenderConfig)conf).getTrainingThreats().toString());
+        argList.add("-m");
+        argList.add("30");
        String[] args = argList.toArray(new String[argList.size()]);
        try {
 		InMemoryCollapsedVariationalBayes0.main(args);
