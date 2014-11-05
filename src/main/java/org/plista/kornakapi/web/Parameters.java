@@ -28,6 +28,10 @@ public class Parameters {
   public static final String BATCH_SIZE = "batchSize";
   public static final String LABEL = "label";
   public static final String Text = "text";
+  
+  // Semantic Context Enhancement, Abstract Level 1 and 2
+  public static final String SCE_AL1 = "sce_al1";
+  public static final String SCE_AL2 = "sce_al2";
 
   public static final int DEFAULT_HOW_MANY = 10;
   public static final int DEFAULT_BATCH_SIZE = 10000;

@@ -18,6 +18,7 @@ import org.apache.hadoop.fs.Path;
 import org.plista.kornakapi.core.config.LDARecommenderConfig;
 import org.plista.kornakapi.core.io.LDAArticleWriter;
 import org.plista.kornakapi.core.preprocessing.BadcharFilter;
+import org.plista.kornakapi.core.preprocessing.MinimumWordsFilter;
 import org.plista.kornakapi.core.preprocessing.StopwordFilter;
 import org.plista.kornakapi.core.training.DocumentTopicInferenceTrainer;
 import org.plista.kornakapi.web.Parameters;
@@ -50,11 +51,27 @@ public class AddArticleServlet extends BaseServlet {
 	String label = getParameter(request, Parameters.LABEL, true);
     String text = getParameter(request, Parameters.Text, true);
     long itemID = getParameterAsLong(request, Parameters.ITEM_ID, true);
+    
+    String sce_al1 = getParameter(request, Parameters.SCE_AL1, false);
+    String sce_al2 = getParameter(request, Parameters.SCE_AL2, false);
+    
+    // Initialization for pre-processing
+	LDARecommenderConfig config = (LDARecommenderConfig) this.getConfiguration().getLDARecommender();
+	String basepath = config.getPreprocessingDataDirectory();
+	StopwordFilter filter = new StopwordFilter(basepath + "kornakapi_sw_de.txt");
+	BadcharFilter filter_bc = new BadcharFilter();   
+	int minimumWords = config.getMinimumWords();
+	MinimumWordsFilter mwFilter = new MinimumWordsFilter(minimumWords);
+    
+	if(!mwFilter.isValid(text)) {
+		log.warn("Article is too short, smaller than minimum words " + String.valueOf(minimumWords) + ", skip it"); 
+		return;
+	}
+	
     if(itemID < 0 || itemID > 2147483647){
     	itemID = this.idRemapping(itemID);
     }
     try{
- 
     	this.storages().get("lda").addCandidate(label, itemID);
     	LDAArticleWriter writer = new LDAArticleWriter();
     	
@@ -62,14 +79,35 @@ public class AddArticleServlet extends BaseServlet {
     	writer.writeArticle(label, itemID, text, "pure");
     	
     	// save preprocessed text 
-    	LDARecommenderConfig config = (LDARecommenderConfig) this.getConfiguration().getLDARecommender();
-    	String basepath = config.getPreprocessingDataDirectory();
-    	StopwordFilter filter = new StopwordFilter(basepath + "kornakapi_sw_de.txt");
-    	BadcharFilter filter_bc = new BadcharFilter();
-    	
     	String processed = filter.filterText(filter_bc.filterText(text));
     	writer.writeArticle(label, itemID, processed, "stopwords");
     	
+    	// save full text with SCE AL 1
+    	if(sce_al1 != null) {
+    		String fulltextSceAl1 = text + " " + sce_al1;
+    		writer.writeArticle(label, itemID, fulltextSceAl1, "SCEAL1");
+    	}
+    	
+    	// save full text with SCE AL 2
+    	if(sce_al2 != null) {
+    		String fulltextSceAl2 = text + " " + sce_al2;
+    		writer.writeArticle(label, itemID, fulltextSceAl2, "SCEAL2");
+    	}
+    	
+    	// save preprocessed text with SCE AL1
+    	if(sce_al1 != null) {
+    		String textSceAl1 = text + "  " + sce_al1;
+    		String processedSceAl1 = filter.filterText(filter_bc.filterText(textSceAl1));
+    		writer.writeArticle(label, itemID, processedSceAl1, "processedSCEAL1");
+    	}
+    	
+    	// save preprocessed text with SCE AL2
+    	if(sce_al2 != null) {
+    		String textSceAl2 = text + " " + sce_al2;
+    		String processedSceAl2 = filter.filterText(filter_bc.filterText(textSceAl2));
+    		writer.writeArticle(label, itemID, processedSceAl2, "processedSCEAL2");
+    	}
+    		
     	topicInferenceForNewItems();	
     } catch(NullPointerException e){
 	  if(log.isInfoEnabled()){
