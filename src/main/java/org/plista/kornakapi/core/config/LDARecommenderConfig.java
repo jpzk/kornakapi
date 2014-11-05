@@ -14,7 +14,12 @@ public class LDARecommenderConfig extends RecommenderConfig{
 	private double maxTermVariance;
 	private String preprocessingDataDirectory;  
 	private Integer minimumWords;
-	  
+    private Integer maxIterations;
+
+    public String getMaxIterations(){
+        return Integer.toString(maxIterations);
+    }
+
 	public String getLuceneIndexPath(){
 		return luceneIndexPath;
 	}

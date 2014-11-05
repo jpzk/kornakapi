@@ -174,7 +174,7 @@ public class LDATopicFactorizer{
         argList.add("-ntt");
         argList.add(((LDARecommenderConfig)conf).getTrainingThreats().toString());
         argList.add("-m");
-        argList.add("30");
+        argList.add(((LDARecommenderConfig)conf).getMaxIterations());
         argList.add("-nut");
         argList.add(((LDARecommenderConfig)conf).getTrainingThreats().toString());
        String[] args = argList.toArray(new String[argList.size()]);
