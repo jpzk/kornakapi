@@ -107,7 +107,8 @@ public class AddArticleServlet extends BaseServlet {
     		String processedSceAl2 = filter.filterText(filter_bc.filterText(textSceAl2));
     		writer.writeArticle(label, itemID, processedSceAl2, "processedSCEAL2");
     	}
-    		
+        this.storages().get(label).addCandidate(label, itemID);
+
     	topicInferenceForNewItems();	
     } catch(NullPointerException e){
 	  if(log.isInfoEnabled()){
