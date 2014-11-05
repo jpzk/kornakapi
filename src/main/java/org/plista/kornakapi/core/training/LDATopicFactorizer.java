@@ -175,6 +175,8 @@ public class LDATopicFactorizer{
         argList.add(((LDARecommenderConfig)conf).getTrainingThreats().toString());
         argList.add("-m");
         argList.add("30");
+        argList.add("-nut");
+        argList.add(((LDARecommenderConfig)conf).getTrainingThreats().toString());
        String[] args = argList.toArray(new String[argList.size()]);
        try {
 		InMemoryCollapsedVariationalBayes0.main(args);
