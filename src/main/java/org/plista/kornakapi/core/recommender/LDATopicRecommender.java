@@ -1,6 +1,8 @@
 package org.plista.kornakapi.core.recommender;
 
 import java.io.IOException;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -63,8 +65,21 @@ public class LDATopicRecommender extends AbstractRecommender implements Kornakap
 	    Vector itemFeature = model.getItemFeatures(itemId.toString());
 	    PreferenceArray preferences = asPreferences(itemIDs);
 	    FastIDSet possibleItemIDs =  getAllOtherItems(Long.MIN_VALUE, preferences);
-		List<RecommendedItem> topItems = TopItems.getTopItems(howMany, possibleItemIDs.iterator(), rescorer, new SemanticEstimator(itemFeature));
-		return topItems;
+	   
+	    // Create connection database
+	    CustomTopItems cti;
+		try {
+			cti = new CustomTopItems();
+			List<RecommendedItem> topItems = cti.getTopItems(howMany, possibleItemIDs.iterator(), rescorer, new SemanticEstimator(itemFeature));
+			return topItems;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} // this will connect 
+		
+		// If no database connection return empty list
+		List<RecommendedItem> emptyRes = new ArrayList<RecommendedItem>();
+		return emptyRes;
 	}
     private float semanticPreference(Vector currentFeatures, Long itemID){
     	Vector v;
