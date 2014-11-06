@@ -78,7 +78,10 @@ public final class CustomTopItems {
 		    int c = rs.getInt("c");
 		    if(c > 0) {
 		    	topItems.add(new GenericRecommendedItem(itemID, (float) rescoredPref));
+		    } else {
+		    	continue;
 		    }
+		    
           if (full) {
             topItems.poll();
           } else if (topItems.size() > howMany) {
