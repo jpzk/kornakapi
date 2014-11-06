@@ -73,7 +73,7 @@ public final class CustomTopItems {
         	// Only add the item to the top items if it is newer than 14 days. 
 		    Statement stmt = (Statement) this.connection.createStatement();
 		    ResultSet rs = stmt.executeQuery("SELECT COUNT(itemid) AS c from item WHERE itemid = " + itemID + 
-		    		" and created_at > DATE_SUB(NOW(), INTERVAL 14 DAY)");
+		    		" and published_at > DATE_SUB(NOW(), INTERVAL 14 DAY)");
 		    rs.next();
 		    int c = rs.getInt("c");
 		    if(c > 0) {
