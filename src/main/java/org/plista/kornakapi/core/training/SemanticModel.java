@@ -16,24 +16,24 @@
 
 package org.plista.kornakapi.core.training;
 
-import java.io.IOException;
-import java.util.HashMap;
-
+import com.google.common.io.Closeables;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.SequenceFile;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.SequenceFile.Reader;
 import org.apache.hadoop.io.SequenceFile.Writer;
+import org.apache.hadoop.io.Text;
+import org.apache.mahout.cf.taste.common.NoSuchItemException;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
-import org.apache.mahout.cf.taste.common.NoSuchItemException;
 import org.plista.kornakapi.core.config.LDARecommenderConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.commons.lang.RandomStringUtils;
 
-import com.google.common.io.Closeables;
+import java.io.IOException;
+import java.util.HashMap;
 
 /**
  * This class collects all relevant information for semantic similarity measure using lda
@@ -44,17 +44,18 @@ public class SemanticModel{
 	private HashMap<String,Integer> itemIndex;
 	private HashMap<String, Vector> itemFeatures;
 	private Path path;
+    private String key;
 	org.apache.hadoop.conf.Configuration lconf = new org.apache.hadoop.conf.Configuration(); 
 	FileSystem fs;
 	  private static final Logger log = LoggerFactory.getLogger(SemanticModel.class);
 	/**
 	 * 
-	 * @param indexItem
-	 * @param itemIndex
-	 * @param itemFeatures
-	 * @param path
+	 * @param indexItem hashMap key: index Itemid value
+	 * @param itemIndex hashMap key: ItemId, index value
+	 * @param itemFeatures hashMap key: ItemId, value TopicVector
+	 * @param path path of model directory
 	 */
-	public SemanticModel(HashMap<Integer,String> indexItem, HashMap<String,Integer> itemIndex, HashMap<String, Vector> itemFeatures, Path path, LDARecommenderConfig conf){
+	public SemanticModel(HashMap<Integer,String> indexItem, HashMap<String,Integer> itemIndex, HashMap<String, Vector> itemFeatures, Path path, LDARecommenderConfig conf) throws IOException {
 		this.indexItem = indexItem;
 		this.itemIndex = itemIndex;
 		this.itemFeatures = itemFeatures;
@@ -66,10 +67,12 @@ public class SemanticModel{
 			e.printStackTrace();
 		}
 	}
-	/**
-	 * 
-	 * @param path
-	 */
+
+    /**
+     *
+     * @param path
+     * @param conf
+     */
 	public SemanticModel(Path path, LDARecommenderConfig conf){
 		this.path = path;
 		try {
@@ -78,18 +81,23 @@ public class SemanticModel{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
-	
-	/**
-	 * 
-	 * @return
-	 */
+        try {
+            readKey();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     *
+     * @return HashMap IndexItem
+     */
 	public HashMap<Integer,String> getIndexItem(){
 		return indexItem;
 	}
 	/**
 	 * 
-	 * @return
+	 * @return  HashMap ItemIndex
 	 */
 	public HashMap<String,Integer> getItemIndex(){
 		return itemIndex;
@@ -123,12 +131,28 @@ public class SemanticModel{
 		throw new NoSuchItemException("Item " + itemid+ " does not exist!");		
 	}
 
+    public void safeMaster() throws IOException {
+        key = RandomStringUtils.random(10);
+        writeKey(key);
+        safe(key);
+
+    }
 
 /**
  * Method to safe the model
  * @throws IOException
  */
-	public void safe() throws IOException{
+	public void safe(String safeKey) throws IOException{
+        /**
+         * New Model training changes the key. Inference can only safe the model if its key is still valid. Thus since inference job start and end no new model was calculated
+         */
+        if(!this.key.equals(safeKey)){
+            if(log.isInfoEnabled()){
+                log.info("Storing model Failed. Modelkey Changed");
+            }
+            return;
+        }
+
 		if(itemFeatures !=null){
 			Path model = path.suffix("/itemFeature.model");
 			Writer w = SequenceFile.createWriter(fs,lconf,model, Text.class, VectorWritable.class);
@@ -167,8 +191,47 @@ public class SemanticModel{
 		}
 		if(log.isInfoEnabled()){
 			log.info("LDA Model Safed");
-}
+        }
 	}
+
+    /**
+     * Key is set to handle concurent writes from DocumentTopicInferenceTrainer and LDATrainer
+     * @throws IOException
+     */
+    private void readKey() throws IOException {
+        Path keyPath = path.suffix("/key.txt");
+        if(fs.exists(keyPath)){
+            Reader reader = new SequenceFile.Reader(fs, keyPath , lconf);
+            IntWritable key = new IntWritable();
+            Text val = new Text();
+            reader.next(key,val);
+            this.key = val.toString();
+            Closeables.close(reader, false);
+            }
+       }
+
+    public String getModelKey() throws IOException {
+        if(this.key == null){
+            readKey();
+        }
+        return this.key;
+    }
+
+    /**
+     * Key is set to handle concurent writes from DocumentTopicInferenceTrainer and LDATrainer
+     * @throws IOException
+     */
+    private void writeKey(String key) throws IOException {
+        Path keyPath = path.suffix("/key.txt");
+        Writer w = SequenceFile.createWriter(fs,lconf,keyPath, IntWritable.class, Text.class);
+        IntWritable id = new IntWritable();
+        Text val = new Text();
+        id.set(1);
+        val.set(key);
+        w.append(id, val);
+        Closeables.close(w, false);
+    }
+
 	
 	/**
 	 * method to load model from squence file

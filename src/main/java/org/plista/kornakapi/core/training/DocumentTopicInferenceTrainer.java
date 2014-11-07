@@ -8,13 +8,14 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.SequenceFile.Reader;
-import org.apache.hadoop.io.SequenceFile.Writer;
 import org.apache.hadoop.io.Text;
 import org.apache.mahout.cf.taste.model.DataModel;
 import org.apache.mahout.clustering.lda.cvb.TopicModel;
 import org.apache.mahout.math.*;
 import org.plista.kornakapi.core.config.LDARecommenderConfig;
 import org.plista.kornakapi.core.config.RecommenderConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,10 +30,10 @@ public class DocumentTopicInferenceTrainer extends AbstractTrainer{
 	private int modelWeight = 1;
 
 	private Path path;
-	private HashMap<Integer,String> indexItem;
-	private HashMap<String,Integer> itemIndex;
-	private HashMap<String, Vector> itemFeatures;
 	private int trainingThreads;
+    private String safeKey;
+    private SemanticModel semanticModel = null;
+    private static final Logger log = LoggerFactory.getLogger(DocumentTopicInferenceTrainer.class);
 	
 
 	public DocumentTopicInferenceTrainer(RecommenderConfig conf, Path path) {
@@ -47,15 +48,22 @@ public class DocumentTopicInferenceTrainer extends AbstractTrainer{
 
 		this.path = path;
 		trainingThreads = this.conf.getInferenceThreats();
-	}
-	
-	
-	/**
-	 * 
-	 * @param itemid
-	 */
+        semanticModel = new SemanticModel(path, (LDARecommenderConfig)conf);
+        try {
+            safeKey = semanticModel.getModelKey();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    /**
+     *
+     * @param itemid
+     * @param item
+     */
 	private void inferTopics(String itemid, Vector item){      
-		if(itemFeatures.containsKey(itemid)){
+		if(semanticModel.getItemFeatures().containsKey(itemid)){
 			return;
 		}
 		try {			
@@ -68,9 +76,9 @@ public class DocumentTopicInferenceTrainer extends AbstractTrainer{
 		            model.trainDocTopicModel(item, docTopics, docTopicModel);
 		        }
 		    model.stop();
-		    itemFeatures.put(itemid, docTopics);
-		    indexItem.put(indexItem.size()+1, itemid);
-		    itemIndex.put(itemid, itemIndex.size() +1);
+            semanticModel.getItemFeatures().put(itemid, docTopics);
+            semanticModel.getIndexItem().put(semanticModel.getIndexItem().size() + 1, itemid);
+            semanticModel.getItemIndex().put(itemid, semanticModel.getItemIndex().size() + 1);
 		    
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -89,7 +97,12 @@ public class DocumentTopicInferenceTrainer extends AbstractTrainer{
 			inferTopics(itemid, tfVectors.get(itemid));
 		}
 		try {
-			safe();
+            SemanticModel newModel = new SemanticModel(semanticModel.getIndexItem(),semanticModel.getItemIndex(),semanticModel.getItemFeatures(),path,conf);
+            newModel.getModelKey();
+            newModel.safe(safeKey);
+            if(log.isInfoEnabled()){
+                log.info("New InferenceModel Created");
+            }
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -98,7 +111,7 @@ public class DocumentTopicInferenceTrainer extends AbstractTrainer{
 	
 	/**
 	 * 
-	 * @return
+	 * @return Returns Dictionary
 	 * @throws IOException
 	 */
 	private String[] getDictAsArray() throws IOException{
@@ -130,10 +143,11 @@ public class DocumentTopicInferenceTrainer extends AbstractTrainer{
 		}
 		return newVectors;
 	}
-	/**
-	 * @throws IOException 
-	 * 
-	 */
+
+    /**
+     *
+     * @return
+     */
 	private HashMap<String, Vector> createVectorsFromDir() {
         HashMap<String, Vector> newVectors = getNewVectors();
 		//cleanup(newVectors);
@@ -159,18 +173,18 @@ public class DocumentTopicInferenceTrainer extends AbstractTrainer{
 						newArticleTF.set(idx, tf);
 					}
 	        	}
-				tfVectors.put(key.toString(), newArticleTF);	
+				tfVectors.put(key, newArticleTF);
 	        }
 		}
 		return tfVectors;
 	}
-	
 
-	/**
-	 * 
-	 * @return
-	 * @throws IOException 
-	 */
+
+    /**
+     *
+     * @return Dictionary as HashMap word as key, integer id as value
+     * @throws IOException
+     */
 	private HashMap<String,Integer> getDict() throws IOException{
         HashMap<String,Integer> modelDictionary = new HashMap<String, Integer>();
 		Reader reader = new SequenceFile.Reader(fs,new Path(this.conf.getTopicsDictionaryPath()) , lconf);
@@ -199,113 +213,30 @@ public class DocumentTopicInferenceTrainer extends AbstractTrainer{
         Closeables.close(reader, false);
         return dict;
 	}
-	
-	/**
-	 * Method to safe the model
-	 * @throws IOException
-	 */
-		public void safe() throws IOException{
-			if(itemFeatures !=null){
-				Path model = path.suffix("/itemFeature.model");
-				Writer w = SequenceFile.createWriter(fs,lconf,model, Text.class, VectorWritable.class);
-				for(String itemid : itemFeatures.keySet()){
-					Text id = new Text();
-					VectorWritable val = new VectorWritable();
-					id.set(itemid);
-					val.set(itemFeatures.get(itemid));
-					w.append(id, val);
-				}
-				Closeables.close(w, false);
-			}
-			if(indexItem != null){
-				Path model = path.suffix("/indexItem.model");
-				Writer w = SequenceFile.createWriter(fs,lconf,model, IntWritable.class, Text.class);
-				for(Integer itemid : indexItem.keySet()){
-					IntWritable key = new IntWritable();
-					Text val = new Text();
-					key.set(itemid);
-					val.set(indexItem.get(itemid));
-					w.append(key, val);
-				}
-				Closeables.close(w, false);
-			}
-			if(itemIndex !=null){
-				Path model = path.suffix("/itemIndex.model");
-				Writer w = SequenceFile.createWriter(fs,lconf,model, Text.class, IntWritable.class);
-				for(String itemid : itemIndex.keySet()){
-					IntWritable val= new IntWritable();
-					Text key  = new Text();
-					key.set(itemid);
-					val.set(itemIndex.get(itemid));
-					w.append(key, val);
-				}
-				Closeables.close(w, false);
-			}
-		}
-		
-		/**
-		 * method to load model from squence file
-		 * @throws IOException
-		 */
-		public void read() throws IOException{
-			Path indexPath = path.suffix("/indexItem.model");
-			if(fs.exists(indexPath)){
-				indexItem = new HashMap<Integer,String>();
-				Reader reader = new SequenceFile.Reader(fs, indexPath , lconf);
-				IntWritable key = new IntWritable();
-				Text val = new Text();
-				while(reader.next(key,val)){
-					indexItem.put(key.get(), val.toString());
-				}
-				Closeables.close(reader, false);
-			}
-			
-			Path itemIndexPath = path.suffix("/itemIndex.model");
-			if(fs.exists(itemIndexPath)){
-				itemIndex = new HashMap<String,Integer>();
-				Reader reader = new SequenceFile.Reader(fs, itemIndexPath , lconf);
-				IntWritable val = new IntWritable();
-				Text key= new Text();
-				while(reader.next(key,val)){
-					itemIndex.put(key.toString(), val.get());
-				}
-				Closeables.close(reader, false);
-			}
-			
-			Path featurePath = path.suffix("/itemFeature.model"); 
-			if(fs.exists(featurePath)){
-				Reader reader = new SequenceFile.Reader(fs, featurePath , lconf);
-				itemFeatures = new HashMap<String,Vector>();
-				Text key = new Text();
-				VectorWritable val = new VectorWritable();
-				while(reader.next(key,val)){
-					itemFeatures.put(key.toString(), val.get());
-				}
-				Closeables.close(reader, false);
-			}
-		}
+
 
 
 	@Override
 	protected void doTrain(File targetFile, DataModel inmemoryData,
 			int numProcessors) throws IOException {
-		read();
+        semanticModel.read();
 		FromFileVectorizer vectorizer = new FromFileVectorizer(conf);
 		try {
 			vectorizer.doTrain();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+            log.info("Inference Failed");
 		}
 
 		inferTopicsForItems();
 
 	}
-	
-	/**
-	 * Moves new Articles to the Corpus
-	 * @param tfVectors
-	 */
+
+    /**
+     *
+     * @param tfVectors
+     */
 	protected void cleanup(HashMap<String, Vector> tfVectors){
 		for(String key : tfVectors.keySet()){
 			File from = new File(conf.getInferencePath() + "Documents/"+ conf.getTrainingSetName() +"/" + key);
