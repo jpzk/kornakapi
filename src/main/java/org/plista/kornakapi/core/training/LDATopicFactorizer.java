@@ -153,7 +153,7 @@ public class LDATopicFactorizer{
 	 * @return
 	 * @throws TasteException
 	 */
-	public SemanticModel factorize() throws TasteException {
+	public SemanticModel factorize() throws TasteException, IOException {
        	List<String> argList = Lists.newLinkedList();
         argList.add("-i");
         argList.add(sparseVectorIn.toString()+ "/matrix");
