@@ -32,8 +32,7 @@ import com.mysql.jdbc.Statement;
 
 /**
  * This class overwrite the TopItems of Mahout, it does prefiltering and just
- * considers items which are not older than N days. N is specified in the config
- * variable lastDays.
+ * considers items which are active (weight = 0).
  */
 public final class CustomTopItems {
 
@@ -47,9 +46,6 @@ public final class CustomTopItems {
 		Components c = Components.instance();
 		LDARecommenderConfig config = (LDARecommenderConfig) c
 				.getConfiguration().getLDARecommender();
-
-		// lastDays specifies the recently of publishing date.
-		mLastDays = config.getLastDays();
 		
 		String conStr = "jdbc:mysql://" + config.getDbHost() + "/db_youfilter?user=" +
 				config.getDbUser() + "&password=" + config.getDbPassword();
@@ -59,21 +55,17 @@ public final class CustomTopItems {
 	};
 
 	/**
-	 * Uses the db connection to figure out if the item is publishing date is
-	 * older than N days. N is specified in the config variable lastDays.
-	 * 
 	 * @param pItemId
 	 * @return
 	 * @throws SQLException
 	 */
 	private boolean isRecentItem(long pItemId) throws SQLException {
 		Statement stmt = (Statement) this.mConnection.createStatement();
-		
-		String lastDaysStr = String.valueOf(mLastDays);
+	
 		ResultSet rs = stmt
 				.executeQuery("SELECT COUNT(itemid) AS c from item WHERE itemid = "
 						+ pItemId
-						+ " and published_at > DATE_SUB(NOW(), INTERVAL " + lastDaysStr + " DAY)");
+						+ " and weight = 0");
 		rs.next();
 		int c = rs.getInt("c");
 		return c > 0;

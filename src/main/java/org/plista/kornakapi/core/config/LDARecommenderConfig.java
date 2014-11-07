@@ -6,7 +6,6 @@ public class LDARecommenderConfig extends RecommenderConfig{
 	private String dbHost;
 	private String dbUser;
 	private String dbPassword;
-	private int lastDays;
 	
 	private String trainingset;
 	private String luceneIndexPath;
@@ -20,10 +19,6 @@ public class LDARecommenderConfig extends RecommenderConfig{
 	private String preprocessingDataDirectory;  
 	private Integer minimumWords;
     private Integer maxIterations;
-
-    public int getLastDays() {
-		return lastDays;
-    }
     
     public String getDbHost() {
     	return dbHost;
