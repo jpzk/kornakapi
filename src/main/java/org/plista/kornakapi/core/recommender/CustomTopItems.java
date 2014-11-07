@@ -23,82 +23,112 @@ import org.apache.mahout.cf.taste.impl.similarity.GenericItemSimilarity;
 import org.apache.mahout.cf.taste.impl.similarity.GenericUserSimilarity;
 import org.apache.mahout.cf.taste.recommender.IDRescorer;
 import org.apache.mahout.cf.taste.recommender.RecommendedItem;
+import org.plista.kornakapi.core.config.LDARecommenderConfig;
+import org.plista.kornakapi.web.Components;
 
 import com.google.common.base.Preconditions;
 import com.mysql.jdbc.Connection;
 import com.mysql.jdbc.Statement;
 
 /**
- * This is somewhat hacky, but it might work. 
- * 
- * @author jendrik.poloczek
- *
+ * This class overwrite the TopItems of Mahout, it does prefiltering and just
+ * considers items which are not older than N days. N is specified in the config
+ * variable lastDays.
  */
 public final class CustomTopItems {
-  
-  private static final long[] NO_IDS = new long[0];
-  private Connection connection;
-  
-  public CustomTopItems() throws SQLException { 
+
+	private static final long[] NO_IDS = new long[0];
 	
-		    this.connection = (Connection) DriverManager.getConnection(
-		    		"jdbc:mysql://plista249.plista.com/db_youfilter?" +
-                "creds");
+	private int mLastDays;
+	private Connection mConnection;
 
-  };
-  
-  public List<RecommendedItem> getTopItems(int howMany,
-                                                  LongPrimitiveIterator possibleItemIDs,
-                                                  IDRescorer rescorer,
-                                                  Estimator<Long> estimator) throws TasteException, SQLException {
-    Preconditions.checkArgument(possibleItemIDs != null, "possibleItemIDs is null");
-    Preconditions.checkArgument(estimator != null, "estimator is null");
+	public CustomTopItems() throws SQLException {
 
-    Queue<RecommendedItem> topItems = new PriorityQueue<RecommendedItem>(howMany + 1,
-      Collections.reverseOrder(ByValueRecommendedItemComparator.getInstance()));
-    boolean full = false;
-    double lowestTopValue = Double.NEGATIVE_INFINITY;
-    while (possibleItemIDs.hasNext()) {
-      long itemID = possibleItemIDs.next();
-      if (rescorer == null || !rescorer.isFiltered(itemID)) {
-        double preference;
-        try {
-          preference = estimator.estimate(itemID);
-        } catch (NoSuchItemException nsie) {
-          continue;
-        }
-        double rescoredPref = rescorer == null ? preference : rescorer.rescore(itemID, preference);
-        if (!Double.isNaN(rescoredPref) && (!full || rescoredPref > lowestTopValue)) {
-        	
-        	// Only add the item to the top items if it is newer than 14 days. 
-		    Statement stmt = (Statement) this.connection.createStatement();
-		    ResultSet rs = stmt.executeQuery("SELECT COUNT(itemid) AS c from item WHERE itemid = " + itemID + 
-		    		" and published_at > DATE_SUB(NOW(), INTERVAL 14 DAY)");
-		    rs.next();
-		    int c = rs.getInt("c");
-		    if(c > 0) {
-		    	topItems.add(new GenericRecommendedItem(itemID, (float) rescoredPref));
-		    } else {
-		    	continue;
-		    }
-		    
-          if (full) {
-            topItems.poll();
-          } else if (topItems.size() > howMany) {
-            full = true;
-            topItems.poll();
-          }
-          lowestTopValue = topItems.peek().getValue();
-        }
-      }
-    }
-    int size = topItems.size();
-    if (size == 0) {
-      return Collections.emptyList();
-    }
-    List<RecommendedItem> result = Lists.newArrayListWithCapacity(size);
-    result.addAll(topItems);
-    Collections.sort(result, ByValueRecommendedItemComparator.getInstance());
-    return result;
-  }
+		Components c = Components.instance();
+		LDARecommenderConfig config = (LDARecommenderConfig) c
+				.getConfiguration().getLDARecommender();
+
+		// lastDays specifies the recently of publishing date.
+		mLastDays = config.getLastDays();
+		
+		// Open connection to item database
+		this.mConnection = (Connection) DriverManager.getConnection(config
+				.getJDBCURL());
+	};
+
+	/**
+	 * Uses the db connection to figure out if the item is publishing date is
+	 * older than N days. N is specified in the config variable lastDays.
+	 * 
+	 * @param pItemId
+	 * @return
+	 * @throws SQLException
+	 */
+	private boolean isRecentItem(long pItemId) throws SQLException {
+		Statement stmt = (Statement) this.mConnection.createStatement();
+		
+		String lastDaysStr = String.valueOf(mLastDays);
+		ResultSet rs = stmt
+				.executeQuery("SELECT COUNT(itemid) AS c from item WHERE itemid = "
+						+ pItemId
+						+ " and published_at > DATE_SUB(NOW(), INTERVAL " + lastDaysStr + " DAY)");
+		rs.next();
+		int c = rs.getInt("c");
+		return c > 0;
+	}
+
+	public List<RecommendedItem> getTopItems(int howMany,
+			LongPrimitiveIterator possibleItemIDs, IDRescorer rescorer,
+			Estimator<Long> estimator) throws TasteException, SQLException {
+		Preconditions.checkArgument(possibleItemIDs != null,
+				"possibleItemIDs is null");
+		Preconditions.checkArgument(estimator != null, "estimator is null");
+
+		Queue<RecommendedItem> topItems = new PriorityQueue<RecommendedItem>(
+				howMany + 1,
+				Collections.reverseOrder(ByValueRecommendedItemComparator
+						.getInstance()));
+		boolean full = false;
+		double lowestTopValue = Double.NEGATIVE_INFINITY;
+		while (possibleItemIDs.hasNext()) {
+			long itemID = possibleItemIDs.next();
+			if (rescorer == null || !rescorer.isFiltered(itemID)) {
+				double preference;
+				try {
+					preference = estimator.estimate(itemID);
+				} catch (NoSuchItemException nsie) {
+					continue;
+				}
+				double rescoredPref = rescorer == null ? preference : rescorer
+						.rescore(itemID, preference);
+				if (!Double.isNaN(rescoredPref)
+						&& (!full || rescoredPref > lowestTopValue)) {
+
+					if (isRecentItem(itemID)) {
+						topItems.add(new GenericRecommendedItem(itemID,
+								(float) rescoredPref));
+					} else {
+						continue;
+					}
+
+					if (full) {
+						topItems.poll();
+					} else if (topItems.size() > howMany) {
+						full = true;
+						topItems.poll();
+					}
+					lowestTopValue = topItems.peek().getValue();
+				}
+			}
+		}
+		int size = topItems.size();
+		if (size == 0) {
+			return Collections.emptyList();
+		}
+		List<RecommendedItem> result = Lists.newArrayListWithCapacity(size);
+		result.addAll(topItems);
+		Collections
+				.sort(result, ByValueRecommendedItemComparator.getInstance());
+		return result;
+	}
 }

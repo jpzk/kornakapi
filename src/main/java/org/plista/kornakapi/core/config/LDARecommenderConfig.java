@@ -1,7 +1,10 @@
 package org.plista.kornakapi.core.config;
 
-
 public class LDARecommenderConfig extends RecommenderConfig{
+	
+	// @see CustomTopItems, for prefiltering results
+	private String jdbcUrl;
+	private int lastDays;
 	
 	private String trainingset;
 	private String luceneIndexPath;
@@ -16,6 +19,14 @@ public class LDARecommenderConfig extends RecommenderConfig{
 	private Integer minimumWords;
     private Integer maxIterations;
 
+    public int getLastDays() {
+		return lastDays;
+    }
+    
+    public String getJDBCURL() {
+    	return jdbcUrl;
+    }
+    
     public String getMaxIterations(){
         return Integer.toString(maxIterations);
     }
