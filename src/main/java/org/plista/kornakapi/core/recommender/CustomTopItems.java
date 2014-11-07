@@ -51,9 +51,11 @@ public final class CustomTopItems {
 		// lastDays specifies the recently of publishing date.
 		mLastDays = config.getLastDays();
 		
+		String conStr = "mysql://" + config.getDbHost() + "/db_youfilter?url=" +
+				config.getDbUser() + "&password=" + config.getDbPassword();
+		
 		// Open connection to item database
-		this.mConnection = (Connection) DriverManager.getConnection(config
-				.getJDBCURL());
+		this.mConnection = (Connection) DriverManager.getConnection(conStr);
 	};
 
 	/**

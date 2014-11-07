@@ -3,7 +3,9 @@ package org.plista.kornakapi.core.config;
 public class LDARecommenderConfig extends RecommenderConfig{
 	
 	// @see CustomTopItems, for prefiltering results
-	private String jdbcUrl;
+	private String dbHost;
+	private String dbUser;
+	private String dbPassword;
 	private int lastDays;
 	
 	private String trainingset;
@@ -23,8 +25,16 @@ public class LDARecommenderConfig extends RecommenderConfig{
 		return lastDays;
     }
     
-    public String getJDBCURL() {
-    	return jdbcUrl;
+    public String getDbHost() {
+    	return dbHost;
+    }
+    
+    public String getDbUser() {
+    	return dbUser;
+    }
+    
+    public String getDbPassword() {
+    	return dbPassword;
     }
     
     public String getMaxIterations(){
