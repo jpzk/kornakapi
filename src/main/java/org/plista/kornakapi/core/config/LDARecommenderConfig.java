@@ -2,11 +2,6 @@ package org.plista.kornakapi.core.config;
 
 public class LDARecommenderConfig extends RecommenderConfig{
 	
-	// @see CustomTopItems, for prefiltering results
-	private String dbHost;
-	private String dbUser;
-	private String dbPassword;
-	
 	private String trainingset;
 	private String luceneIndexPath;
 	private Integer numberOfTopics;
@@ -19,18 +14,6 @@ public class LDARecommenderConfig extends RecommenderConfig{
 	private String preprocessingDataDirectory;  
 	private Integer minimumWords;
     private Integer maxIterations;
-    
-    public String getDbHost() {
-    	return dbHost;
-    }
-    
-    public String getDbUser() {
-    	return dbUser;
-    }
-    
-    public String getDbPassword() {
-    	return dbPassword;
-    }
     
     public String getMaxIterations(){
         return Integer.toString(maxIterations);
